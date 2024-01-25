@@ -22,8 +22,8 @@ export class QrCodeService {
         throw new InternalServerErrorException('hardware is not ready');
       }
       await this.plcCommunicationService.writeBlock(
-        ['barcodeData'],
-        [createDto.code],
+        ['barcodeData', 'barcodeFlag'],
+        [createDto.code, 1],
       );
       await this.plcCommunicationService.writeBlock(['barcodeFlag'], [1]);
       const qrCode = this.repo.create(createDto);

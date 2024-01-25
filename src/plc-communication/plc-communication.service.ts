@@ -42,7 +42,6 @@ export class PlcCommunicationService {
       await this.establishConnection(setting);
       await this.addDataBlock(configuration.blockSetting);
       await this.triggerCycleScan();
-      void this.writeBlock(['barcodeData'], ['testing123']);
       return true;
     } catch (err) {
       this.errorHandler('INTI CONNECTION ERROR', true, err);
