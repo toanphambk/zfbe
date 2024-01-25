@@ -143,7 +143,7 @@ export class PlcCommunicationService {
       await this.dataUpdate();
       void this.triggerCycleScan();
     } catch (error) {
-      this.errorHandler('CYCLE SCAN ERROR', false);
+      this.errorHandler('CYCLE SCAN ERROR' + error, false);
     }
   };
 
