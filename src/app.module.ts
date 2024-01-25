@@ -24,6 +24,7 @@ import { ProductionLineModule } from './production-line/production-line.module';
 import { ShiftModule } from './shift/shift.module';
 import { PlcCommunicationModule } from './plc-communication/plc-communication.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { QrcodeModule } from './qr-code/qrCode.module';
 
 @Module({
   imports: [
@@ -69,6 +70,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
     ProductionLineModule,
     ShiftModule,
     PlcCommunicationModule,
+    QrcodeModule,
     EventEmitterModule.forRoot(),
   ],
 })

@@ -38,6 +38,10 @@ export class PlcCommunicationService {
     }
   }
 
+  public getData(): PlcData {
+    return this.data;
+  }
+
   public async initConnection(
     setting: S7CommunicationSetting,
   ): Promise<boolean> {
