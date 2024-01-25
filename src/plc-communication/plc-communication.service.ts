@@ -31,11 +31,6 @@ export class PlcCommunicationService {
 
   private async init() {
     await this.initConnection(configuration.plcSetting);
-    try {
-      await this.writeBlock(['barcodeData'], ['dfasdfasdef']);
-    } catch (error) {
-      console.log(error);
-    }
   }
 
   public getData(): PlcData {
