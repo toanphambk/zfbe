@@ -31,7 +31,11 @@ export class PlcCommunicationService {
 
   private async init() {
     await this.initConnection(configuration.plcSetting);
-    void this.writeBlock(['barcodeData'], ['afasdfasdfaewrwer']);
+    try {
+      await this.writeBlock(['barcodeData'], ['dfasdfasdef']);
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   public async initConnection(
@@ -45,7 +49,7 @@ export class PlcCommunicationService {
       await this.triggerCycleScan();
       return true;
     } catch (err) {
-      this.errorHandler('INTI CONNECTION ERROR', false, err);
+      this.errorHandler('INTI CONNECTION ERROR', true, err);
       return false;
     }
   }
@@ -85,11 +89,11 @@ export class PlcCommunicationService {
         this.addressList.write.push({ name: key, address: setting.address });
       }
     });
-    log(this.addressList);
+
     const readingAdressList = this.addressList.read.map(
       (block) => block.address,
     );
-
+    this.s7Connection.removeItems();
     this.s7Connection.addItems(readingAdressList);
 
     await new Promise<void>((res) => {
@@ -165,6 +169,10 @@ export class PlcCommunicationService {
 
   public writeBlock = (blockName: BlockName[], data: any[], log = true) => {
     return new Promise<boolean>((res, rej) => {
+      if (this.data.state !== ServiceState.READY) {
+        rej('PLC is not ready');
+        return;
+      }
       const { isValid, blockAddress } = this.blockAdressParse(blockName);
       if (!isValid) {
         rej('DATA BLOCK IS NOT VALID');
@@ -247,6 +255,12 @@ export class PlcCommunicationService {
             void this.dataUpdate();
           }, 500);
         }
+        break;
+      case 'INTI CONNECTION ERROR':
+        log('asdfasdfasdf');
+        setTimeout(async () => {
+          await this.initConnection(configuration.plcSetting);
+        }, 5000);
         break;
     }
     return;
