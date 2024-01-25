@@ -31,6 +31,7 @@ export class PlcCommunicationService {
 
   private async init() {
     await this.initConnection(configuration.plcSetting);
+    void this.writeBlock(['barcodeData'], ['afasdfasdfaewrwer']);
   }
 
   public async initConnection(
