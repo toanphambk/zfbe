@@ -1,10 +1,11 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { PlcCommunicationService } from 'src/plc-communication/plc-communication.service';
-import { CreateQrCodeDto } from './dto/create-qrCode.dto';
+import { CreateQrCodeDto } from './dto/create-qr-code.dto';
 import { Qrcode } from './entities/qrCode.entity';
 import { ServiceState } from 'src/plc-communication/interface/systemState.interface';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { log } from 'console';
 
 @Injectable()
 export class QrCodeService {
@@ -14,6 +15,7 @@ export class QrCodeService {
     private plcCommunicationService: PlcCommunicationService,
   ) {}
   async create(createDto: CreateQrCodeDto): Promise<Qrcode> {
+    log(createDto);
     const { state, barcodeFlag } = this.plcCommunicationService.getData();
     try {
       if (state !== ServiceState.READY || barcodeFlag) {

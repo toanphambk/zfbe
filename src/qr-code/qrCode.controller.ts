@@ -11,7 +11,7 @@ import { Roles } from 'src/roles/roles.decorator';
 import { RoleEnum } from 'src/roles/roles.enum';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from 'src/roles/roles.guard';
-import { CreateQrCodeDto } from './dto/create-qrCode.dto';
+import { CreateQrCodeDto } from './dto/create-qr-code.dto';
 import { Qrcode } from './entities/qrCode.entity';
 import { QrCodeService } from './qrCode.service';
 
