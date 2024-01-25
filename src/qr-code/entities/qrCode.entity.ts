@@ -4,7 +4,6 @@ import {
   DeleteDateColumn,
   Entity,
   PrimaryGeneratedColumn,
-  UpdateDateColumn,
 } from 'typeorm';
 import { Exclude } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
@@ -32,14 +31,6 @@ export class Qrcode {
     description: 'Scan date of the code',
   })
   createdAt: Date;
-
-  @UpdateDateColumn()
-  @Exclude()
-  // @ApiProperty({
-  //   example: '2021-01-01T00:00:00.000Z',
-  //   description: 'Last update date of the production line record',
-  // })
-  updatedAt: Date;
 
   @DeleteDateColumn()
   @Exclude()

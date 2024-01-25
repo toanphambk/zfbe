@@ -20,7 +20,7 @@ import configuration from './interface/plcConfig';
 export class PlcCommunicationService {
   constructor(private PlcCommunicationServiceEvent: EventEmitter2) {
     this.data = new Proxy(this.data, this.dataChangeHandler());
-    void this.init();
+    void this.initConnection(configuration.plcSetting);
   }
 
   private s7Connection = new nodes7();
@@ -28,10 +28,6 @@ export class PlcCommunicationService {
   private data = <PlcData>{ state: ServiceState.BOOT_UP };
   private plcWriteQueue: PlcWriteQueue[] = [];
   private addressList: PlcAddresslist;
-
-  private async init() {
-    await this.initConnection(configuration.plcSetting);
-  }
 
   public getData(): PlcData {
     return this.data;
@@ -92,7 +88,6 @@ export class PlcCommunicationService {
     const readingAdressList = this.addressList.read.map(
       (block) => block.address,
     );
-    this.s7Connection.removeItems();
     this.s7Connection.addItems(readingAdressList);
 
     await new Promise<void>((res) => {
