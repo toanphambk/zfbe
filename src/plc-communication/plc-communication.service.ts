@@ -31,8 +31,6 @@ export class PlcCommunicationService {
 
   private async init() {
     await this.initConnection(configuration.plcSetting);
-    await this.addDataBlock(configuration.blockSetting);
-    await this.triggerCycleScan();
   }
 
   public async initConnection(
@@ -42,7 +40,8 @@ export class PlcCommunicationService {
     this.data.state = ServiceState.INIT;
     try {
       await this.establishConnection(setting);
-      void this.triggerCycleScan();
+      await this.addDataBlock(configuration.blockSetting);
+      await this.triggerCycleScan();
       return true;
     } catch (err) {
       this.errorHandler('INTI CONNECTION ERROR', false, err);

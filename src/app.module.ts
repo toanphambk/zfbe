@@ -23,6 +23,7 @@ import { AllConfigType } from './config/config.type';
 import { ProductionLineModule } from './production-line/production-line.module';
 import { ShiftModule } from './shift/shift.module';
 import { PlcCommunicationModule } from './plc-communication/plc-communication.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
@@ -68,6 +69,7 @@ import { PlcCommunicationModule } from './plc-communication/plc-communication.mo
     ProductionLineModule,
     ShiftModule,
     PlcCommunicationModule,
+    EventEmitterModule.forRoot(),
   ],
 })
 export class AppModule {}
