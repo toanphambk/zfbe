@@ -85,9 +85,9 @@ export class PlcCommunicationService {
       }
     });
 
-    const readingAdressList = this.addressList.read.map(
-      (block) => block.address,
-    );
+    const readingAdressList = this.addressList.read
+      .map((block) => block.address)
+      .concat('_COMMERR');
     this.s7Connection.addItems(readingAdressList);
 
     await new Promise<void>((res) => {
@@ -142,7 +142,7 @@ export class PlcCommunicationService {
     }
   };
 
-  private dataUpdate = async () => {
+  public dataUpdate = async () => {
     try {
       const dataFromPLC = await this.readFromPlc();
       Object.keys(dataFromPLC).map((address) => {
@@ -199,6 +199,7 @@ export class PlcCommunicationService {
           return;
         }
         res(data);
+        console.log(data);
       });
     });
   };
@@ -209,14 +210,14 @@ export class PlcCommunicationService {
         const oldVal = target[key];
         if (oldVal != val) {
           target[key] = val;
-          const data: Payload = {
+          const payload: Payload = {
             data: this.data,
             key,
             oldVal,
             val,
           };
-          this.PlcCommunicationServiceEvent.emit('dataChange', data);
-          log(data);
+          this.PlcCommunicationServiceEvent.emit('dataChange', payload);
+          log(payload);
           return true;
         }
         return true;
