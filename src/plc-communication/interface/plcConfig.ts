@@ -10,6 +10,10 @@ const configuration: Configuration = {
       address: 'DB47,INT0.1',
       type: 'READ_WRITE',
     },
+    conStat: {
+      address: '_COMMERR',
+      type: 'READ_ONLY',
+    },
   },
   plcSetting: {
     ip: '192.168.0.1',

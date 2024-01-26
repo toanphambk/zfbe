@@ -29,7 +29,7 @@ export interface PlcAddresslist {
 }
 
 export type BlockType = 'READ_ONLY' | 'READ_WRITE' | 'WRITE_ONLY';
-export type BlockName = 'barcodeData' | 'barcodeFlag';
+export type BlockName = 'barcodeData' | 'barcodeFlag' | 'conStat';
 
 export type PlcData = {
   [key in BlockName | 'state']: any;
