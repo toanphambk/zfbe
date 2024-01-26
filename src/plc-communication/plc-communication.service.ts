@@ -37,9 +37,11 @@ export class PlcCommunicationService {
     setting: S7CommunicationSetting,
   ): Promise<boolean> {
     console.log(`[ INIT CONNECTION ] : ${JSON.stringify(setting, null, 1)}`);
+    log(this.s7Connection.findItem('_COMMERR'));
     this.data.state = ServiceState.INIT;
     try {
       await this.establishConnection(setting);
+      log(this.s7Connection.findItem('_COMMERR'));
       await this.addDataBlock(configuration.blockSetting);
       await this.triggerCycleScan();
       return true;
@@ -90,7 +92,7 @@ export class PlcCommunicationService {
     );
 
     this.s7Connection.addItems(readingAdressList);
-    this.s7Connection.addItems(['_COMMERR']);
+
     await new Promise<void>((res) => {
       setTimeout(() => {
         res();
@@ -200,7 +202,6 @@ export class PlcCommunicationService {
           return;
         }
         res(data);
-        console.log(data);
       });
     });
   };
