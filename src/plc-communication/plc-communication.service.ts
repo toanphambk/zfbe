@@ -85,10 +85,11 @@ export class PlcCommunicationService {
       }
     });
 
-    const readingAdressList = this.addressList.read
-      .map((block) => block.address)
-      .concat('_COMMERR');
-    this.s7Connection.addItems(readingAdressList);
+    const readingAdressList = this.addressList.read.map(
+      (block) => block.address,
+    );
+
+    this.s7Connection.addItems(readingAdressList.concat('_COMMERR'));
 
     await new Promise<void>((res) => {
       setTimeout(() => {
