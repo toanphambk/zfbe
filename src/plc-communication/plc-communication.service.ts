@@ -89,8 +89,8 @@ export class PlcCommunicationService {
       (block) => block.address,
     );
 
-    this.s7Connection.addItems(readingAdressList.concat('_COMMERR'));
-
+    this.s7Connection.addItems(readingAdressList);
+    this.s7Connection.addItems(['_COMMERR']);
     await new Promise<void>((res) => {
       setTimeout(() => {
         res();
