@@ -11,36 +11,7 @@ import {
   Configuration,
 } from 'src/plc-communication/interface/plc-communication.interface';
 import { log } from 'console';
-
-type RecordData =
-  | 'OPID'
-  | 'CurDta_QD01'
-  | 'CurDta_QD02'
-  | 'CurDta_QD03'
-  | 'CurDta_QD04'
-  | 'PrvDta1_QD01'
-  | 'PrvDta1_QD02'
-  | 'PrvDta1_QD03'
-  | 'PrvDta1_QD04'
-  | 'PrvDta2_QD01'
-  | 'PrvDta2_QD02'
-  | 'PrvDta2_QD03'
-  | 'PrvDta2_QD04'
-  | 'TryCnt'
-  | 'RT'
-  | 'OType'
-  | 'QD01_Min'
-  | 'QD01_Max'
-  | 'QD02_Min'
-  | 'QD02_Max'
-  | 'QD03_Min'
-  | 'QD03_Max'
-  | 'QD04_Min'
-  | 'QD04_Max'
-  | 'OperatorName'
-  | 'OPTxt';
-
-type RecordID = 'SystemDT' | 'ModuleSerialNo';
+import { RecordData, RecordID } from './mesConfigs';
 
 const configuration = <Configuration<RecordData | RecordID>>{
   ip: '192.168.0.1',
@@ -97,7 +68,7 @@ export class MesService {
         this.plcCommunicationService.setConfig(configuration);
         await this.plcCommunicationService.addDataBlock();
         const data = this.plcCommunicationService.getData();
-        xmlData += this.formatDataForXml(`QD.DT0${i}`, data) + '\n';
+        xmlData += this.formatDataForXml(`QD.DT0${i + 1}`, data) + '\n';
       }
       xmlData += '/>';
       log(xmlData);
