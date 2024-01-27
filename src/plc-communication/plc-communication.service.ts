@@ -133,10 +133,10 @@ export class PlcCommunicationService<BlockName extends PropertyKey> {
     this.s7Connection.removeItems();
   }
 
-  public activeCycleScan(): void {
+  public async activeCycleScan() {
     if (this.cycleScanIsActive) return;
     this.cycleScanIsActive = true;
-    void this.cycleScan();
+    await this.cycleScan();
   }
 
   public deactiveCycleScan(): void {
