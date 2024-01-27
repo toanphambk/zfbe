@@ -38,13 +38,15 @@ export class QrCodeService {
     private plcServiceFactory: (
       eventEmitter: EventEmitter2,
     ) => PlcCommunicationService<any>,
-  ) {}
+  ) {
+    void this.initPlcService();
+  }
 
   async initPlcService() {
     this.plcCommunicationService = this.plcServiceFactory(new EventEmitter2());
     this.plcCommunicationService.setConfig(configuration);
     await this.plcCommunicationService.initConnection();
-    await this.plcCommunicationService.activeCycleScan();
+    this.plcCommunicationService.activeCycleScan();
   }
 
   async create(createDto: CreateQrCodeDto): Promise<Qrcode> {
