@@ -1,24 +1,57 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { PlcCommunicationService } from 'src/plc-communication/plc-communication.service';
 import { CreateQrCodeDto } from './dto/create-qr-code.dto';
 import { Qrcode } from './entities/qrCode.entity';
-import { ServiceState } from 'src/plc-communication/interface/systemState.interface';
-import { InjectRepository } from '@nestjs/typeorm';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { Configuration } from 'src/plc-communication/interface/plc-communication.interface';
 import { Repository } from 'typeorm';
-import { log } from 'console';
+import { InjectRepository } from '@nestjs/typeorm';
+
+export type BarCode = 'barcodeData' | 'barcodeFlag';
+
+const configuration: Configuration<BarCode> = {
+  blockSetting: {
+    barcodeData: {
+      address: 'DB47,S2.40',
+      type: 'WRITE_ONLY',
+    },
+    barcodeFlag: {
+      address: 'DB47,INT0.1',
+      type: 'READ_WRITE',
+    },
+  },
+  ip: '192.168.0.1',
+};
 
 @Injectable()
 export class QrCodeService {
+  private plcCommunicationService: PlcCommunicationService<BarCode>;
+
   constructor(
     @InjectRepository(Qrcode)
     private repo: Repository<Qrcode>,
-    private plcCommunicationService: PlcCommunicationService,
+    @Inject('PlcCommunicationServiceFactory')
+    private plcServiceFactory: (
+      eventEmitter: EventEmitter2,
+    ) => PlcCommunicationService<any>,
   ) {}
+
+  async initPlcService() {
+    this.plcCommunicationService = this.plcServiceFactory(new EventEmitter2());
+    this.plcCommunicationService.setConfig(configuration);
+    await this.plcCommunicationService.initConnection();
+    await this.plcCommunicationService.activeCycleScan();
+  }
+
   async create(createDto: CreateQrCodeDto): Promise<Qrcode> {
-    log(createDto);
-    const { state, barcodeFlag } = this.plcCommunicationService.getData();
+    const { state } = this.plcCommunicationService.getState();
+    const { barcodeFlag } = this.plcCommunicationService.getData();
     try {
-      if (state !== ServiceState.READY || barcodeFlag) {
+      if (state !== 'READY' || barcodeFlag) {
         throw new InternalServerErrorException('hardware is not ready');
       }
       await this.plcCommunicationService.writeBlock(

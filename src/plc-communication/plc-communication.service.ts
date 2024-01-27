@@ -6,44 +6,55 @@ import { v4 as uuidv4 } from 'uuid';
 import {
   PlcAddresslist,
   PlcData,
-  BlockSetting,
   PlcWriteQueue,
-  BlockName,
+  Configuration,
+  BlockInfo,
+  PlcComState,
 } from './interface/plc-communication.interface';
-import { S7CommunicationSetting } from './interface/plc-communication.interface';
-import { ServiceState } from './interface/systemState.interface';
 import { Payload } from 'src/plc-communication/interface/main-controller.interface';
 import { log } from 'console';
-import configuration from './interface/plcConfig';
 
 @Injectable()
-export class PlcCommunicationService {
+export class PlcCommunicationService<BlockName extends PropertyKey> {
   constructor(private PlcCommunicationServiceEvent: EventEmitter2) {
     this.data = new Proxy(this.data, this.dataChangeHandler());
-    void this.initConnection(configuration.plcSetting);
+  }
+  private s7Connection = new nodes7();
+  private state: PlcComState = 'BOOT_UP';
+  private cycleScanIsActive = false;
+  private config: Configuration<BlockName>;
+  private addressList: PlcAddresslist;
+  private data = <PlcData<BlockName>>{};
+  private plcWriteQueue: PlcWriteQueue[] = [];
+  private plcEvent = new EventEmitter();
+
+  public setConfig(config: Configuration<BlockName>) {
+    this.config = config;
   }
 
-  private s7Connection = new nodes7();
-  private plcEvent = new EventEmitter();
-  private data = <PlcData>{ state: ServiceState.BOOT_UP };
-  private plcWriteQueue: PlcWriteQueue[] = [];
-  private addressList: PlcAddresslist;
-
-  public getData(): PlcData {
+  public getData(): PlcData<BlockName> {
     return this.data;
   }
 
-  public async initConnection(
-    setting: S7CommunicationSetting,
-  ): Promise<boolean> {
-    console.log(`[ INIT CONNECTION ] : ${JSON.stringify(setting, null, 1)}`);
-    log(this.s7Connection.findItem('_COMMERR'));
-    this.data.state = ServiceState.INIT;
+  public getState() {
+    const { value } = this.s7Connection.findItem('_COMMERR');
+    return {
+      state: this.state,
+      connection: !value,
+      cycleScanIsActive: this.cycleScanIsActive,
+      config: this.config,
+      addressList: this.addressList,
+    };
+  }
+
+  public async initConnection(): Promise<boolean> {
+    console.log(
+      `[ INIT CONNECTION ] : ${JSON.stringify(this.config, null, 1)}`,
+    );
+    this.state = 'INIT';
     try {
-      await this.establishConnection(setting);
-      log(this.s7Connection.findItem('_COMMERR'));
-      await this.addDataBlock(configuration.blockSetting);
-      await this.triggerCycleScan();
+      await this.establishConnection();
+      await this.addDataBlock();
       return true;
     } catch (err) {
       this.errorHandler('INTI CONNECTION ERROR', true, err);
@@ -51,14 +62,14 @@ export class PlcCommunicationService {
     }
   }
 
-  private establishConnection(setting: S7CommunicationSetting): Promise<void> {
+  private establishConnection(): Promise<void> {
     return new Promise((resolve, reject) => {
       this.s7Connection.initiateConnection(
         {
-          port: setting.port,
-          host: setting.ip,
-          rack: setting.rack,
-          slot: setting.slot,
+          host: this.config.ip,
+          port: 102,
+          rack: 0,
+          slot: 1,
           debug: true,
         },
         (err) => (err ? reject(err) : resolve()),
@@ -66,24 +77,40 @@ export class PlcCommunicationService {
     });
   }
 
-  public addDataBlock = async (dataBlockSetting: BlockSetting) => {
-    if (this.data.state == ServiceState.ERROR) {
+  public async dropConnection() {
+    await new Promise<void>((res) => {
+      this.s7Connection.dropConnection(() => {
+        res();
+      });
+    });
+  }
+
+  private addDataBlock = async () => {
+    if (this.state == 'ERROR') {
       throw new Error('Plc Communication Service Is Not Ready');
     }
 
-    if (this.data.state == ServiceState.READY) {
-      this.data.state = ServiceState.INIT;
+    if (this.state == 'READY') {
+      this.state = 'INIT';
       this.s7Connection.removeItems();
     }
 
     this.addressList = { read: [], write: [] };
 
-    Object.entries(dataBlockSetting).forEach(([key, setting]) => {
+    Object.entries(this.config.blockSetting).forEach(([key, blockSetting]) => {
+      const setting = blockSetting as BlockInfo;
+
       if (['READ_ONLY', 'READ_WRITE'].includes(setting.type)) {
-        this.addressList.read.push({ name: key, address: setting.address });
+        this.addressList.read.push({
+          name: key,
+          address: setting.address,
+        });
       }
       if (['WRITE_ONLY', 'READ_WRITE'].includes(setting.type)) {
-        this.addressList.write.push({ name: key, address: setting.address });
+        this.addressList.write.push({
+          name: key,
+          address: setting.address,
+        });
       }
     });
 
@@ -102,46 +129,65 @@ export class PlcCommunicationService {
     return true;
   };
 
-  private triggerCycleScan = async () => {
-    try {
-      if (this.data.state != ServiceState.READY) {
-        console.log('[ PLC Service ]: PLC Service Is Not Ready');
-        this.plcWriteQueue = [];
-        await new Promise<void>((res) => {
-          setTimeout(() => {
-            res();
-          }, 1000);
-        });
-        return;
-      }
+  public removeBlock() {
+    this.s7Connection.removeItems();
+  }
 
-      if (this.plcWriteQueue.length > 10) {
-        this.errorHandler('QUEUE OVERFLOW', false, this.plcWriteQueue);
-        return;
-      }
+  public activeCycleScan(): void {
+    if (this.cycleScanIsActive) return;
+    this.cycleScanIsActive = true;
+  }
 
-      if (this.plcWriteQueue.length > 0) {
-        await new Promise<void>((res, rej) => {
-          const command = this.plcWriteQueue[0];
-          this.s7Connection.writeItems(
-            command.blockName,
-            command.data,
-            (err) => {
-              if (err) {
-                rej(this.errorHandler(`WRITE TO PLC ERROR : `, false, command));
-                return;
-              }
-              this.plcWriteQueue.shift();
-              this.plcEvent.emit(command.uuid, undefined);
+  public deactiveCycleScan(): void {
+    if (!this.cycleScanIsActive) return;
+    this.cycleScanIsActive = false;
+    void this.cycleScan();
+  }
+
+  private cycleScan = async () => {
+    while (this.cycleScanIsActive) {
+      try {
+        if (this.state != 'READY') {
+          console.log('[ PLC Service ]: PLC Service Is Not Ready');
+          this.plcWriteQueue = [];
+          await new Promise<void>((res) => {
+            setTimeout(() => {
               res();
-            },
-          );
-        });
+            }, 1000);
+          });
+          return;
+        }
+
+        if (this.plcWriteQueue.length > 10) {
+          this.errorHandler('QUEUE OVERFLOW', false, this.plcWriteQueue);
+          return;
+        }
+
+        if (this.plcWriteQueue.length > 0) {
+          await new Promise<void>((res, rej) => {
+            const command = this.plcWriteQueue[0];
+            this.s7Connection.writeItems(
+              command.blockName,
+              command.data,
+              (err) => {
+                if (err) {
+                  rej(
+                    this.errorHandler(`WRITE TO PLC ERROR : `, false, command),
+                  );
+                  return;
+                }
+                this.plcWriteQueue.shift();
+                this.plcEvent.emit(command.uuid, undefined);
+                res();
+              },
+            );
+          });
+        }
+        await this.dataUpdate();
+        void this.cycleScan();
+      } catch (error) {
+        this.errorHandler('CYCLE SCAN ERROR' + error, false);
       }
-      await this.dataUpdate();
-      void this.triggerCycleScan();
-    } catch (error) {
-      this.errorHandler('CYCLE SCAN ERROR' + error, false);
     }
   };
 
@@ -158,7 +204,7 @@ export class PlcCommunicationService {
         }
         throw new Error('Address not found in read array');
       });
-      this.data.state = ServiceState.READY;
+      this.state = 'READY';
     } catch (error) {
       void this.errorHandler('READ FROM PLC ERROR', true, error);
     }
@@ -166,7 +212,7 @@ export class PlcCommunicationService {
 
   public writeBlock = (blockName: BlockName[], data: any[], log = true) => {
     return new Promise<boolean>((res, rej) => {
-      if (this.data.state !== ServiceState.READY) {
+      if (this.state !== 'READY') {
         rej('PLC is not ready');
         return;
       }
@@ -212,7 +258,7 @@ export class PlcCommunicationService {
         const oldVal = target[key];
         if (oldVal != val) {
           target[key] = val;
-          const payload: Payload = {
+          const payload: Payload<BlockName> = {
             data: this.data,
             key,
             oldVal,
@@ -235,15 +281,14 @@ export class PlcCommunicationService {
 
   private errorHandler = (err: string, isOperational: boolean, data?: any) => {
     console.log(`[ ERROR ] :  ${err} : ${data ? JSON.stringify(data) : ''}`);
+    this.state = 'ERROR';
     if (!isOperational) {
-      this.data.state = ServiceState.ERROR;
       //do some other logging, event trigger for this
       return;
     }
 
     switch (err) {
       case 'READ FROM PLC ERROR':
-        this.data.state = ServiceState.ERROR;
         const isBadReading = Object.values(data.plcData).find(
           (val: unknown) => typeof val == 'string' && val.includes('BAD'),
         );
@@ -254,9 +299,8 @@ export class PlcCommunicationService {
         }
         break;
       case 'INTI CONNECTION ERROR':
-        log('asdfasdfasdf');
         setTimeout(async () => {
-          await this.initConnection(configuration.plcSetting);
+          await this.initConnection();
         }, 5000);
         break;
     }

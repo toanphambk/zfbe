@@ -1,6 +1,8 @@
 import { Configuration } from './plc-communication.interface';
 
-const configuration: Configuration = {
+export type BarCode = 'barcodeData' | 'barcodeFlag';
+
+const configuration: Configuration<BarCode> = {
   blockSetting: {
     barcodeData: {
       address: 'DB47,S2.40',
@@ -10,17 +12,8 @@ const configuration: Configuration = {
       address: 'DB47,INT0.1',
       type: 'READ_WRITE',
     },
-    conStat: {
-      address: '_COMMERR',
-      type: 'READ_ONLY',
-    },
   },
-  plcSetting: {
-    ip: '192.168.0.1',
-    port: 102,
-    rack: 0,
-    slot: 1,
-  },
+  ip: '192.168.0.1',
 };
 
 export default configuration;

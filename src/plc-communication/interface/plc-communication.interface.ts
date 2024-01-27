@@ -1,36 +1,26 @@
-export type Configuration = {
-  blockSetting: BlockSetting;
-  plcSetting: S7CommunicationSetting;
-};
-export type S7CommunicationSetting = {
+export type Configuration<T extends PropertyKey> = {
   ip: string;
-  port: number;
-  rack: number;
-  slot: number;
-};
-
-export type PlcWriteQueue = {
-  blockName: string[];
-  data: any[];
-  uuid: string;
-};
-
-export type BlockSetting = {
-  [key in BlockName]: BlockInfo;
+  blockSetting: { [P in T]: BlockInfo };
 };
 
 export type BlockInfo = {
   address: string;
-  type: BlockType;
+  type: 'READ_ONLY' | 'READ_WRITE' | 'WRITE_ONLY';
 };
+
 export interface PlcAddresslist {
   read: { name: string; address: string }[];
   write: { name: string; address: string }[];
 }
 
-export type BlockType = 'READ_ONLY' | 'READ_WRITE' | 'WRITE_ONLY';
-export type BlockName = 'barcodeData' | 'barcodeFlag' | 'conStat';
+export type PlcData<T extends PropertyKey> = {
+  [P in T]: any;
+};
 
-export type PlcData = {
-  [key in BlockName | 'state']: any;
+export type PlcComState = 'BOOT_UP' | 'INIT' | 'READY' | 'ERROR';
+
+export type PlcWriteQueue = {
+  blockName: string[];
+  data: any[];
+  uuid: string;
 };
