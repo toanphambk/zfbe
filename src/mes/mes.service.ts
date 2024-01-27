@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { PlcCommunicationService } from 'src/plc-communication/plc-communication.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import * as xml2js from 'xml2js';
 import {
   BlockInfo,
   Configuration,
@@ -46,7 +47,7 @@ const configuration = <Configuration<RecordData>>{
 @Injectable()
 export class MesService {
   private plcCommunicationService: PlcCommunicationService<RecordData>;
-
+  private builder = new xml2js.Builder();
   constructor(
     @Inject('PlcCommunicationServiceFactory')
     private plcServiceFactory: (
@@ -63,20 +64,27 @@ export class MesService {
     void this.readDataAndExportXml();
   }
 
-  async readDataAndExportXml() {
+  public async readDataAndExportXml() {
     const { connection } = this.plcCommunicationService.getState();
+    if (!connection) {
+      throw new InternalServerErrorException('CONNECTION ERROR');
+    }
+
+    const allData = { QD: {} };
+
     try {
-      if (!connection) {
-        throw new InternalServerErrorException('CONNECTION ERROR');
-      }
-      for (let i = 0; i < 4; i++) {
+      for (let i = 1; i <= 4; i++) {
         configuration.blockSetting = this.generateElementConfig(i);
         this.plcCommunicationService.setConfig(configuration);
         await this.plcCommunicationService.addDataBlock();
-        log(this.plcCommunicationService.getData());
+        const data = this.plcCommunicationService.getData();
+        allData.QD[`DT0${i}`] = data;
       }
+      const xml = this.builder.buildObject(allData);
+      log(xml);
+      return xml;
     } catch (error) {
-      log('write to plc error', error);
+      throw new Error('Write to PLC error');
     }
   }
 
