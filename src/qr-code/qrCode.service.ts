@@ -46,6 +46,7 @@ export class QrCodeService {
     this.plcCommunicationService = this.plcServiceFactory(new EventEmitter2());
     this.plcCommunicationService.setConfig(configuration);
     await this.plcCommunicationService.initConnection();
+    await this.plcCommunicationService.addDataBlock();
     await this.plcCommunicationService.activeCycleScan();
   }
 

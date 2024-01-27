@@ -54,7 +54,6 @@ export class PlcCommunicationService<BlockName extends PropertyKey> {
     this.state = 'INIT';
     try {
       await this.establishConnection();
-      await this.addDataBlock();
       return true;
     } catch (err) {
       this.errorHandler('INTI CONNECTION ERROR', true, err);
@@ -85,7 +84,7 @@ export class PlcCommunicationService<BlockName extends PropertyKey> {
     });
   }
 
-  private addDataBlock = async () => {
+  public addDataBlock = async () => {
     if (this.state == 'ERROR') {
       throw new Error('Plc Communication Service Is Not Ready');
     }
