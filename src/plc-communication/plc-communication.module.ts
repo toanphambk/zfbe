@@ -6,8 +6,9 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
   providers: [
     {
       provide: 'PlcCommunicationServiceFactory',
-      useFactory: (eventEmitter: EventEmitter2) => {
-        return new PlcCommunicationService<any>(eventEmitter);
+      useFactory: () => {
+        return (eventEmitter: EventEmitter2) =>
+          new PlcCommunicationService<any>(eventEmitter);
       },
       inject: [EventEmitter2],
     },
