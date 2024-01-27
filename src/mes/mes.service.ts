@@ -70,7 +70,17 @@ export class MesService {
       throw new InternalServerErrorException('CONNECTION ERROR');
     }
 
-    const allData = { QD: {} };
+    const allData = {
+      Data: {
+        QD: {
+          HDR: {
+            SystemID: 'BMC-10.225.244.231',
+            SystemDT: '20240124111229',
+            ModuleSerialNo: 'BM04240124111222',
+          },
+        },
+      },
+    };
 
     try {
       for (let i = 0; i < 4; i++) {
@@ -78,7 +88,7 @@ export class MesService {
         this.plcCommunicationService.setConfig(configuration);
         await this.plcCommunicationService.addDataBlock();
         const data = this.plcCommunicationService.getData();
-        allData.QD[`DT0${i+1}`] = data;
+        allData.Data.QD[`DT0${i}`] = data;
       }
       const xml = this.builder.buildObject(allData);
       log(xml);
