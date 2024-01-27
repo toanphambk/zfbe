@@ -68,7 +68,6 @@ export class PlcCommunicationService<BlockName extends PropertyKey> {
           port: 102,
           rack: 0,
           slot: 1,
-          debug: true,
         },
         (err) => (err ? reject(err) : resolve()),
       );
