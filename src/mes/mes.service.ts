@@ -58,6 +58,7 @@ export class MesService {
 
   async initPlcService() {
     this.plcCommunicationService = this.plcServiceFactory(new EventEmitter2());
+    this.plcCommunicationService.setConfig(configuration);
     await this.plcCommunicationService.initConnection();
     void this.readDataAndExportXml();
   }
