@@ -189,7 +189,7 @@ export class MesService {
         type: 'READ_ONLY',
       } as BlockInfo,
       OPTxt: {
-        address: `DB46,S${startOffset + 94}.60`,
+        address: `DB46,S${startOffset + 96}.60`,
         type: 'READ_ONLY',
       } as BlockInfo,
     };
