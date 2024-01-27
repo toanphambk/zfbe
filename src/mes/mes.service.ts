@@ -69,33 +69,29 @@ export class MesService {
     if (!connection) {
       throw new InternalServerErrorException('CONNECTION ERROR');
     }
-
-    const allData = {
-      Data: {
-        QD: {
-          HDR: {
-            SystemID: 'BMC-10.225.244.231',
-            SystemDT: '20240124111229',
-            ModuleSerialNo: 'BM04240124111222',
-          },
-        },
-      },
-    };
-
+    let xmlData = '<Data\n';
     try {
       for (let i = 0; i < 4; i++) {
         configuration.blockSetting = this.generateElementConfig(i);
         this.plcCommunicationService.setConfig(configuration);
         await this.plcCommunicationService.addDataBlock();
         const data = this.plcCommunicationService.getData();
-        allData.Data.QD[`DT0${i}`] = data;
+        xmlData += this.formatDataForXml(`QD.DT0${i}`, data) + '\n';
       }
-      const xml = this.builder.buildObject(allData);
-      log(xml);
-      return xml;
+      xmlData += '/>';
+      log(xmlData);
+      return xmlData;
     } catch (error) {
       throw new Error('Write to PLC error');
     }
+  }
+
+  private formatDataForXml(prefix: string, data: any): string {
+    return Object.entries(data)
+      .map(([key, value]) => {
+        return `${prefix}.${key}="${value}"`;
+      })
+      .join(' ');
   }
 
   private generateElementConfig(i: number) {
