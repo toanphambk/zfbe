@@ -75,7 +75,7 @@ export class MesService {
         log(this.plcCommunicationService.getData());
       }
     } catch (error) {
-      throw new InternalServerErrorException('write to plc error');
+      throw new InternalServerErrorException('write to plc error', error);
     }
   }
 
