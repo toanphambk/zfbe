@@ -139,7 +139,6 @@ export class PlcCommunicationService<BlockName extends PropertyKey> {
   }
 
   public deactiveCycleScan(): void {
-    if (!this.cycleScanIsActive) return;
     this.cycleScanIsActive = false;
   }
 
@@ -203,6 +202,7 @@ export class PlcCommunicationService<BlockName extends PropertyKey> {
         }
         throw new Error('Address not found in read array');
       });
+      log(dataFromPLC);
       this.state = 'READY';
     } catch (error) {
       void this.errorHandler('READ FROM PLC ERROR', true, error);
