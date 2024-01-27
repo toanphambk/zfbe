@@ -143,8 +143,7 @@ export class PlcCommunicationService<BlockName extends PropertyKey> {
   }
 
   private cycleScan = async () => {
-    while (this.cycleScanIsActive) {
-      log('cycle');
+    if (this.cycleScanIsActive) {
       try {
         if (this.state != 'READY') {
           console.log('[ PLC Service ]: PLC Service Is Not Ready');
