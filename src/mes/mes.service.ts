@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { PlcCommunicationService } from 'src/plc-communication/plc-communication.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import * as xml2js from 'xml2js';
+import xml2js from 'xml2js';
 import {
   BlockInfo,
   Configuration,
