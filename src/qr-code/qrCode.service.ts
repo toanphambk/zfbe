@@ -46,7 +46,7 @@ export class QrCodeService {
     this.plcCommunicationService = this.plcServiceFactory(new EventEmitter2());
     this.plcCommunicationService.setConfig(configuration);
     await this.plcCommunicationService.initConnection();
-    await this.plcCommunicationService.activeCycleScan();
+    // await this.plcCommunicationService.activeCycleScan();
   }
 
   async create(createDto: CreateQrCodeDto): Promise<Qrcode> {

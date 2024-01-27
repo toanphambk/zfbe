@@ -134,7 +134,6 @@ export class PlcCommunicationService<BlockName extends PropertyKey> {
   }
 
   public async activeCycleScan() {
-    if (this.cycleScanIsActive) return;
     this.cycleScanIsActive = true;
     await this.cycleScan();
   }
