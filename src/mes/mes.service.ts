@@ -72,10 +72,11 @@ export class MesService {
         configuration.blockSetting = this.generateElementConfig(i);
         this.plcCommunicationService.setConfig(configuration);
         await this.plcCommunicationService.addDataBlock();
+
         log(this.plcCommunicationService.getData());
       }
     } catch (error) {
-      throw new InternalServerErrorException('write to plc error', error);
+      log('write to plc error', error);
     }
   }
 
