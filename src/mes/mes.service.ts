@@ -73,12 +73,12 @@ export class MesService {
     const allData = { QD: {} };
 
     try {
-      for (let i = 1; i <= 4; i++) {
+      for (let i = 0; i < 4; i++) {
         configuration.blockSetting = this.generateElementConfig(i);
         this.plcCommunicationService.setConfig(configuration);
         await this.plcCommunicationService.addDataBlock();
         const data = this.plcCommunicationService.getData();
-        allData.QD[`DT0${i}`] = data;
+        allData.QD[`DT0${i+1}`] = data;
       }
       const xml = this.builder.buildObject(allData);
       log(xml);
