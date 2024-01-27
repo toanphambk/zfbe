@@ -81,7 +81,7 @@ export class MesService {
         type: 'READ_ONLY',
       },
       ModuleSerialNo: {
-        address: `DB46,S$76.20`,
+        address: `DB46,S76.20`,
         type: 'READ_ONLY',
       },
     } as BlockSetting<RecordID>;
