@@ -70,7 +70,8 @@ export class MesService {
       }
       for (let i = 0; i < 4; i++) {
         configuration.blockSetting = this.generateElementConfig(i);
-        await this.plcCommunicationService.dataUpdate();
+        this.plcCommunicationService.setConfig(configuration);
+        await this.plcCommunicationService.addDataBlock();
         log(this.plcCommunicationService.getData());
       }
     } catch (error) {
