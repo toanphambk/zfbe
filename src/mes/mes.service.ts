@@ -73,7 +73,6 @@ export class MesService {
         configuration.blockSetting = this.generateElementConfig(i);
         this.plcCommunicationService.setConfig(configuration);
         await this.plcCommunicationService.addDataBlock();
-
         log(this.plcCommunicationService.getData());
       }
     } catch (error) {
