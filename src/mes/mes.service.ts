@@ -47,7 +47,7 @@ const configuration = <Configuration<RecordData>>{
 @Injectable()
 export class MesService {
   private plcCommunicationService: PlcCommunicationService<RecordData>;
-  private builder = new xml2js.Builder();
+  private builder = new xml2js.Builder({ headless: true, rootName: 'Data' });
   constructor(
     @Inject('PlcCommunicationServiceFactory')
     private plcServiceFactory: (
