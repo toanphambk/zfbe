@@ -73,26 +73,26 @@ export class MesService {
     if (!connection) {
       throw new InternalServerErrorException('CONNECTION ERROR');
     }
-
-    let xmlData = '<Data\n';
-    configuration.blockSetting = {
-      SystemDT: {
-        address: `DB46,S60.14`,
-        type: 'READ_ONLY',
-      },
-      ModuleSerialNo: {
-        address: `DB46,S76.20`,
-        type: 'READ_ONLY',
-      },
-    } as BlockSetting<RecordID>;
-
-    this.plcCommunicationService.setConfig(configuration);
-    await this.plcCommunicationService.addDataBlock();
-    const data = this.plcCommunicationService.getData();
-    xmlData += this.formatDataForXml(`QD.HDR`, data) + '\n';
-
     try {
+      let xmlData = '<Data\n';
+      configuration.blockSetting = {
+        SystemDT: {
+          address: `DB46,S60.14`,
+          type: 'READ_ONLY',
+        },
+        ModuleSerialNo: {
+          address: `DB46,S76.20`,
+          type: 'READ_ONLY',
+        },
+      } as BlockSetting<RecordID>;
+
+      this.plcCommunicationService.setConfig(configuration);
+      await this.plcCommunicationService.addDataBlock();
+      const data = this.plcCommunicationService.getData();
+      xmlData += this.formatDataForXml(`QD.HDR`, data) + '\n';
+
       for (let i = 0; i < 4; i++) {
+        configuration.blockSetting = {};
         configuration.blockSetting = this.generateElementConfig(i);
         this.plcCommunicationService.setConfig(configuration);
         await this.plcCommunicationService.addDataBlock();
