@@ -144,6 +144,7 @@ export class PlcCommunicationService<BlockName extends PropertyKey> {
 
   private cycleScan = async () => {
     while (this.cycleScanIsActive) {
+      log('cycle');
       try {
         if (this.state != 'READY') {
           console.log('[ PLC Service ]: PLC Service Is Not Ready');
@@ -202,7 +203,6 @@ export class PlcCommunicationService<BlockName extends PropertyKey> {
         }
         throw new Error('Address not found in read array');
       });
-      log(dataFromPLC);
       this.state = 'READY';
     } catch (error) {
       void this.errorHandler('READ FROM PLC ERROR', true, error);
