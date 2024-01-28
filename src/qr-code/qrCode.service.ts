@@ -7,10 +7,7 @@ import { PlcCommunicationService } from 'src/plc-communication/plc-communication
 import { CreateQrCodeDto } from './dto/create-qr-code.dto';
 import { Qrcode } from './entities/qrCode.entity';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
-import {
-  Configuration,
-  Payload,
-} from 'src/plc-communication/interface/plc-communication.interface';
+import { Configuration } from 'src/plc-communication/interface/plc-communication.interface';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MesService } from 'src/mes/mes.service';
@@ -113,7 +110,7 @@ export class QrCodeService {
   @OnEvent('dataChange')
   handleOrderCreatedEvent({ key, val }) {
     if (key == 'mesReadFlag' && val == 1) {
-      this.readMesData;
+      void this.readMesData();
     }
   }
 }
