@@ -60,7 +60,7 @@ export class QrCodeService {
   }
 
   async initPlcService() {
-    this.plcCommunicationService = this.plcServiceFactory(this.);
+    this.plcCommunicationService = this.plcServiceFactory(this.eventEmitter);
     this.plcCommunicationService.setConfig(configuration);
     await this.plcCommunicationService.initConnection();
     await this.plcCommunicationService.addDataBlock();
