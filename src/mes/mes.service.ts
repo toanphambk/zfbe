@@ -27,12 +27,13 @@ export class MesService {
     private plcServiceFactory: (
       eventEmitter: EventEmitter2,
     ) => PlcCommunicationService<any>,
+    private eventEmitter: EventEmitter2,
   ) {
     void this.initPlcService();
   }
 
   async initPlcService() {
-    this.plcCommunicationService = this.plcServiceFactory(new EventEmitter2());
+    this.plcCommunicationService = this.plcServiceFactory(this.eventEmitter);
     this.plcCommunicationService.setConfig(configuration);
     await this.plcCommunicationService.initConnection();
   }
