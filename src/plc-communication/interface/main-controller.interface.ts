@@ -2,7 +2,7 @@ import { PlcData } from 'src/plc-communication/interface/plc-communication.inter
 
 export interface Payload<T extends PropertyKey> {
   data: any;
-  key: keyof (keyof PlcData<T>);
+  key: T;
   oldVal: any;
   val: any;
 }

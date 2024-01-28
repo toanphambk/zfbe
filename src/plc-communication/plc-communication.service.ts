@@ -10,8 +10,8 @@ import {
   Configuration,
   BlockInfo,
   PlcComState,
+  Payload,
 } from './interface/plc-communication.interface';
-import { Payload } from 'src/plc-communication/interface/main-controller.interface';
 
 @Injectable()
 export class PlcCommunicationService<BlockName extends PropertyKey> {

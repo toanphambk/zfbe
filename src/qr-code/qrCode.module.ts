@@ -4,9 +4,14 @@ import { PlcCommunicationModule } from 'src/plc-communication/plc-communication.
 import { Qrcode } from './entities/qrCode.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { QrCodeController } from './qrCode.controller';
+import { MesModule } from 'src/mes/mes.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Qrcode]), PlcCommunicationModule],
+  imports: [
+    TypeOrmModule.forFeature([Qrcode]),
+    PlcCommunicationModule,
+    MesModule,
+  ],
   controllers: [QrCodeController],
   providers: [QrCodeService],
   exports: [QrCodeService],

@@ -21,6 +21,13 @@ export type PlcData<T extends PropertyKey> = {
   [P in T]: any;
 };
 
+export interface Payload<T extends PropertyKey> {
+  data: any;
+  key: T;
+  oldVal: any;
+  val: any;
+}
+
 export type PlcComState = 'BOOT_UP' | 'INIT' | 'READY' | 'ERROR';
 
 export type PlcWriteQueue = {

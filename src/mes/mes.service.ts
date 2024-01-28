@@ -10,7 +10,6 @@ import {
   BlockSetting,
   Configuration,
 } from 'src/plc-communication/interface/plc-communication.interface';
-import { log } from 'console';
 import { RecordData, RecordID } from './mesConfigs';
 
 const configuration = <Configuration<RecordData | RecordID>>{
@@ -36,7 +35,6 @@ export class MesService {
     this.plcCommunicationService = this.plcServiceFactory(new EventEmitter2());
     this.plcCommunicationService.setConfig(configuration);
     await this.plcCommunicationService.initConnection();
-    void this.readDataAndExportXml();
   }
 
   public async readDataAndExportXml() {
@@ -46,6 +44,7 @@ export class MesService {
     }
     try {
       let xmlData = '<Data\n';
+      let filename = '';
       configuration.blockSetting = {
         SystemDT: {
           address: `DB46,S60.14`,
@@ -60,6 +59,7 @@ export class MesService {
       this.plcCommunicationService.setConfig(configuration);
       await this.plcCommunicationService.addDataBlock();
       const data = this.plcCommunicationService.getData();
+      filename = data.ModuleSerialNo;
       xmlData += this.formatDataForXml(`QD.HDR`, data) + '\n';
 
       for (let i = 0; i < 4; i++) {
@@ -71,8 +71,7 @@ export class MesService {
         xmlData += this.formatDataForXml(`QD.DT0${i + 1}`, data) + '\n';
       }
       xmlData += '/>';
-      log(xmlData);
-      return xmlData;
+      return { filename, xmlData };
     } catch (error) {
       throw new Error('Write to PLC error');
     }
