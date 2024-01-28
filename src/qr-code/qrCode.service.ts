@@ -112,10 +112,6 @@ export class QrCodeService {
 
   @OnEvent('dataChange')
   handleOrderCreatedEvent({ data, key, oldVal, val }: Payload<BarCode>) {
-    if (oldVal == undefined) {
-      return;
-    }
-
     log(data);
     if (key == 'mesReadFlag' && val == 1) {
       this.readMesData;
