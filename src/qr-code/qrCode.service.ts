@@ -117,7 +117,7 @@ export class QrCodeService {
     }
 
     log(data);
-    if (key == 'barcodeFlag' && val == 1) {
+    if (key == 'mesReadFlag' && val == 1) {
       this.readMesData;
     }
   }
