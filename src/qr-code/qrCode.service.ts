@@ -85,8 +85,9 @@ export class QrCodeService {
     }
   }
 
-  async readMesData() {
+  private async readMesData() {
     try {
+      log('reading mes data');
       const data = await this.mesService.readDataAndExportXml();
       await this.plcCommunicationService.writeBlock(['mesReadFlag'], [0]);
       await this.plcCommunicationService.writeBlock(['mesReadDone'], [0]);
