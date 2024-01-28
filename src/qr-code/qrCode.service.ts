@@ -92,7 +92,7 @@ export class QrCodeService {
     try {
       const data = await this.mesService.readDataAndExportXml();
       await this.plcCommunicationService.writeBlock(['mesReadFlag'], [0]);
-      await this.plcCommunicationService.writeBlock(['mesReadFlag'], [0]);
+      await this.plcCommunicationService.writeBlock(['mesReadDone'], [0]);
       log(data);
 
       // Check if 'E:\data' directory exists, create it if not
@@ -111,8 +111,7 @@ export class QrCodeService {
   }
 
   @OnEvent('dataChange')
-  handleOrderCreatedEvent({ data, key, oldVal, val }: Payload<BarCode>) {
-    log(data);
+  handleOrderCreatedEvent({ key, val }) {
     if (key == 'mesReadFlag' && val == 1) {
       this.readMesData;
     }

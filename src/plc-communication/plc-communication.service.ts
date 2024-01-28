@@ -12,6 +12,7 @@ import {
   PlcComState,
   Payload,
 } from './interface/plc-communication.interface';
+import { log } from 'console';
 
 @Injectable()
 export class PlcCommunicationService<BlockName extends PropertyKey> {
@@ -260,6 +261,7 @@ export class PlcCommunicationService<BlockName extends PropertyKey> {
             val,
           };
           this.PlcCommunicationServiceEvent.emit('dataChange', payload);
+          log(payload);
           return true;
         }
         return true;
