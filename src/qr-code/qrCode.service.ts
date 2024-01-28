@@ -93,7 +93,7 @@ export class QrCodeService {
       const data = await this.mesService.readDataAndExportXml();
       await this.plcCommunicationService.writeBlock(['mesReadFlag'], [0]);
       await this.plcCommunicationService.writeBlock(['mesReadFlag'], [0]);
-      console.log(data);
+      log(data);
 
       // Check if 'E:\data' directory exists, create it if not
       const dirPath = 'E:\\data';
@@ -115,6 +115,8 @@ export class QrCodeService {
     if (oldVal == undefined) {
       return;
     }
+
+    log(data);
     if (key == 'barcodeFlag' && val == 1) {
       this.readMesData;
     }
