@@ -52,7 +52,7 @@ export class QrCodeService {
     @Inject('PlcCommunicationServiceFactory')
     private plcServiceFactory: (
       eventEmitter: EventEmitter2,
-    ) => PlcCommunicationService<any>,
+    ) => PlcCommunicationService<BarCode>,
     private mesService: MesService,
   ) {
     void this.initPlcService();
