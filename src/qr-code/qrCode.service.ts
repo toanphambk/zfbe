@@ -13,7 +13,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { MesService } from 'src/mes/mes.service';
 import { log } from 'console';
 import { existsSync, mkdirSync, writeFileSync } from 'fs';
-import path from 'path';
+import { join } from 'path';
 
 export type BarCode =
   | 'barcodeData'
@@ -60,7 +60,7 @@ export class QrCodeService {
   }
 
   async initPlcService() {
-    this.plcCommunicationService = this.plcServiceFactory(this.eventEmitter);
+    this.plcCommunicationService = this.plcServiceFactory(this.);
     this.plcCommunicationService.setConfig(configuration);
     await this.plcCommunicationService.initConnection();
     await this.plcCommunicationService.addDataBlock();
@@ -101,7 +101,7 @@ export class QrCodeService {
       }
 
       // Save xmlData as file
-      const filePath = path.join(dirPath, data.filename);
+      const filePath = join(dirPath, data.filename);
       writeFileSync(filePath, data.xmlData);
     } catch (error) {
       await this.plcCommunicationService.writeBlock(['mesReadDone'], [1]);
