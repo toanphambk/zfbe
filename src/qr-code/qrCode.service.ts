@@ -88,19 +88,15 @@ export class QrCodeService {
 
   private async readMesData() {
     try {
-      log('reading mes data');
       const data = await this.mesService.readDataAndExportXml();
       await this.plcCommunicationService.writeBlock(['mesReadFlag'], [0]);
       await this.plcCommunicationService.writeBlock(['mesReadDone'], [0]);
-      log(data);
 
-      // Check if 'E:\data' directory exists, create it if not
       const dirPath = 'E:\\data';
       if (!existsSync(dirPath)) {
         mkdirSync(dirPath, { recursive: true });
       }
 
-      // Save xmlData as file
       const filePath = join(dirPath, data.filename);
       writeFileSync(filePath, data.xmlData);
     } catch (error) {
