@@ -102,7 +102,7 @@ export class QrCodeService {
       const filePath = path.join(dirPath, data.filename);
       writeFileSync(filePath, data.xmlData);
     } catch (error) {
-      await this.plcCommunicationService.writeBlock(['mesReadFlag'], [1]);
+      await this.plcCommunicationService.writeBlock(['mesReadDone'], [1]);
       console.error(error);
     }
   }
