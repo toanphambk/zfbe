@@ -11,9 +11,9 @@ import { Configuration } from 'src/plc-communication/interface/plc-communication
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MesService } from 'src/mes/mes.service';
-import { log } from 'console';
 import { existsSync, mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
+import { log } from 'console';
 
 export type BarCode =
   | 'barcodeData'
@@ -59,14 +59,27 @@ export class QrCodeService {
     void this.initPlcService();
   }
 
-  async initPlcService() {
-    this.plcCommunicationService = this.plcServiceFactory(this.eventEmitter);
-    this.plcCommunicationService.setConfig(configuration);
-    await this.plcCommunicationService.initConnection();
-    await this.plcCommunicationService.addDataBlock();
-    await this.plcCommunicationService.activeCycleScan();
+  private async initPlcService() {
+    try {
+      this.plcCommunicationService = this.plcServiceFactory(this.eventEmitter);
+      this.plcCommunicationService.setConfig(configuration);
+      await this.checkConnectionAndInitialize();
+
+      await this.plcCommunicationService.addDataBlock();
+      await this.plcCommunicationService.activeCycleScan();
+    } catch (error) {
+      log(error);
+    }
   }
 
+  private async checkConnectionAndInitialize() {
+    const isConnected = await this.plcCommunicationService.initConnection();
+
+    if (!isConnected) {
+      await new Promise<void>((resolve) => setTimeout(resolve, 1000));
+      await this.checkConnectionAndInitialize();
+    }
+  }
   async create(createDto: CreateQrCodeDto): Promise<Qrcode> {
     const { state } = this.plcCommunicationService.getState();
     const { barcodeFlag } = this.plcCommunicationService.getData();

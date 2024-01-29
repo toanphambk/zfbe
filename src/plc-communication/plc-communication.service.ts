@@ -34,6 +34,13 @@ export class PlcCommunicationService<BlockName extends PropertyKey> {
   public getData(): PlcData<BlockName> {
     return this.data;
   }
+  public resetData(): boolean {
+    if (this.cycleScanIsActive) {
+      return false;
+    }
+    this.data = <PlcData<BlockName>>{};
+    return true;
+  }
 
   public getState() {
     const { value } = this.s7Connection.findItem('_COMMERR');

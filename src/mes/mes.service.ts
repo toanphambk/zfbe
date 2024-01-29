@@ -18,9 +18,6 @@ const configuration = <Configuration<RecordData | RecordID>>{
 
 @Injectable()
 export class MesService {
-  private plcCommunicationService: PlcCommunicationService<
-    RecordData | RecordID
-  >;
   private builder = new xml2js.Builder({ headless: true, rootName: 'Data' });
   constructor(
     @Inject('PlcCommunicationServiceFactory')
@@ -28,18 +25,15 @@ export class MesService {
       eventEmitter: EventEmitter2,
     ) => PlcCommunicationService<any>,
     private eventEmitter: EventEmitter2,
-  ) {
-    void this.initPlcService();
-  }
-
-  async initPlcService() {
-    this.plcCommunicationService = this.plcServiceFactory(this.eventEmitter);
-    this.plcCommunicationService.setConfig(configuration);
-    await this.plcCommunicationService.initConnection();
-  }
+  ) {}
 
   public async readDataAndExportXml() {
-    const { connection } = this.plcCommunicationService.getState();
+    const plcCommunicationService: PlcCommunicationService<
+      RecordData | RecordID
+    > = this.plcServiceFactory(this.eventEmitter);
+    plcCommunicationService.setConfig(configuration);
+    await plcCommunicationService.initConnection();
+    const { connection } = plcCommunicationService.getState();
     if (!connection) {
       throw new InternalServerErrorException('CONNECTION ERROR');
     }
@@ -57,18 +51,18 @@ export class MesService {
         },
       } as BlockSetting<RecordID>;
 
-      this.plcCommunicationService.setConfig(configuration);
-      await this.plcCommunicationService.addDataBlock();
-      const data = this.plcCommunicationService.getData();
+      plcCommunicationService.setConfig(configuration);
+      await plcCommunicationService.addDataBlock();
+      const data = plcCommunicationService.getData();
       filename = data.ModuleSerialNo;
       xmlData += this.formatDataForXml(`QD.HDR`, data) + '\n';
 
       for (let i = 0; i < 4; i++) {
         configuration.blockSetting = {};
         configuration.blockSetting = this.generateElementConfig(i);
-        this.plcCommunicationService.setConfig(configuration);
-        await this.plcCommunicationService.addDataBlock();
-        const data = this.plcCommunicationService.getData();
+        plcCommunicationService.setConfig(configuration);
+        await plcCommunicationService.addDataBlock();
+        const data = plcCommunicationService.getData();
         xmlData += this.formatDataForXml(`QD.DT0${i + 1}`, data) + '\n';
       }
       xmlData += '/>';
