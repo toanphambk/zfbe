@@ -46,7 +46,7 @@ export class MesService {
       throw new InternalServerErrorException('CONNECTION ERROR');
     }
     try {
-      let xmlData = '<Data\nQD.HDR.SystemID="BMC-10.225.244.231"';
+      let xmlData = '<Data\nQD.HDR.SystemID="BMC-10.225.244.231" ';
       let filename = '';
       configuration.blockSetting = {
         SystemDT: {
