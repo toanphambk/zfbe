@@ -71,6 +71,7 @@ export class MesService {
       for (let i = 0; i < 4; i++) {
         configuration.blockSetting = {};
         configuration.blockSetting = this.generateElementConfig(i);
+        plcCommunicationService.resetData();
         plcCommunicationService.setConfig(configuration);
         await plcCommunicationService.addDataBlock();
         const data = plcCommunicationService.getData();
