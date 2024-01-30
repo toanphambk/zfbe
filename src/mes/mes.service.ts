@@ -27,6 +27,14 @@ export class MesService {
     private eventEmitter: EventEmitter2,
   ) {}
 
+  async initPlcService() {
+    const plcCommunicationService: PlcCommunicationService<
+      RecordData | RecordID
+    > = this.plcServiceFactory(this.eventEmitter);
+    plcCommunicationService.setConfig(configuration);
+    await plcCommunicationService.initConnection();
+  }
+
   public async readDataAndExportXml() {
     const plcCommunicationService: PlcCommunicationService<
       RecordData | RecordID
@@ -38,7 +46,7 @@ export class MesService {
       throw new InternalServerErrorException('CONNECTION ERROR');
     }
     try {
-      let xmlData = '<Data\n';
+      let xmlData = '<Data\n QD.HDR.SystemID="BMC-10.225.244.231"';
       let filename = '';
       configuration.blockSetting = {
         SystemDT: {
@@ -55,8 +63,11 @@ export class MesService {
       await plcCommunicationService.addDataBlock();
       const data = plcCommunicationService.getData();
       filename = data.ModuleSerialNo;
-      xmlData += this.formatDataForXml(`QD.HDR`, data) + '\n';
-
+      xmlData +=
+        this.formatDataForXml(`QD.HDR`, data) +
+        '\n' +
+        `QD.HDR.LineID="BMC" QD.HDR.StationName="RBP025" QD.HDR.StationID="104" QD.HDR.PartID="0" QD.HDR.Mode="0" DBType="QUALITY"` +
+        '\n';
       for (let i = 0; i < 4; i++) {
         configuration.blockSetting = {};
         configuration.blockSetting = this.generateElementConfig(i);
