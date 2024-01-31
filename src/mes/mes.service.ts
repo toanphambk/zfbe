@@ -2,19 +2,24 @@ import {
   Inject,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import { PlcCommunicationService } from 'src/plc-communication/plc-communication.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import * as xml2js from 'xml2js';
 import {
   BlockSetting,
-  Configuration,
+  PlcData,
 } from 'src/plc-communication/interface/plc-communication.interface';
-import { RecordData, RecordID } from './mesConfigs';
-
-const configuration = <Configuration<RecordData | RecordID>>{
-  ip: '192.168.0.1',
-};
+import {
+  RecordData,
+  RecordInfo,
+  recordDataConfig,
+  recordInfoConfig,
+} from './mesConfigs';
+import { ProductionLine } from 'src/production-line/entities/production-line.entity';
+import { ProductionLineService } from 'src/production-line/production-line.service';
+import { EntityCondition } from 'src/utils/types/entity-condition.type';
 
 @Injectable()
 export class MesService {
@@ -25,63 +30,92 @@ export class MesService {
       eventEmitter: EventEmitter2,
     ) => PlcCommunicationService<any>,
     private eventEmitter: EventEmitter2,
+    private productionLineService: ProductionLineService,
   ) {}
 
-  async initPlcService() {
-    const plcCommunicationService: PlcCommunicationService<
-      RecordData | RecordID
-    > = this.plcServiceFactory(this.eventEmitter);
-    plcCommunicationService.setConfig(configuration);
-    await plcCommunicationService.initConnection();
+  public async readMesData(productionLine: EntityCondition<ProductionLine>) {
+    try {
+      const { fileName, data: recordInfo } = await this.readRecordInfo(
+        productionLine,
+      );
+      let xmlData = '<Data\n" ';
+      xmlData += this.formatDataForXml(`QD.HDR`, recordInfo.lineInfo) + '\n';
+      xmlData +=
+        this.formatDataForXml(`QD.HDR`, recordInfo.stationInfo) +
+        ' DBType="QUALITY\n';
+      const { data: recordData } = await this.readRecordData(productionLine);
+      recordData.forEach((data, index) => {
+        xmlData += this.formatDataForXml(`QD.DT0${index + 1}`, data) + '\n';
+      });
+      xmlData += '/>';
+      return { fileName, xmlData };
+    } catch (error) {
+      throw new Error('Read to PLC error');
+    }
   }
 
-  public async readDataAndExportXml() {
-    const plcCommunicationService: PlcCommunicationService<
-      RecordData | RecordID
-    > = this.plcServiceFactory(this.eventEmitter);
-    plcCommunicationService.setConfig(configuration);
-    await plcCommunicationService.initConnection();
-    const { connection } = plcCommunicationService.getState();
+  private async readRecordInfo(
+    productionLine: EntityCondition<ProductionLine>,
+  ) {
+    const found = await this.productionLineService.findOne(productionLine);
+    if (!found) {
+      throw new NotFoundException('cant find product category');
+    }
+
+    const recordInfoConn: PlcCommunicationService<RecordInfo> =
+      this.plcServiceFactory(this.eventEmitter);
+    recordInfoConfig.ip = found.ipAddress;
+    recordInfoConn.setConfig(recordInfoConfig);
+    await recordInfoConn.initConnection();
+    const { connection } = recordInfoConn.getState();
     if (!connection) {
       throw new InternalServerErrorException('CONNECTION ERROR');
     }
-    try {
-      let xmlData = '<Data\nQD.HDR.SystemID="BMC-10.225.244.231" ';
-      let filename = '';
-      configuration.blockSetting = {
-        SystemDT: {
-          address: `DB46,S60.14`,
-          type: 'READ_ONLY',
-        },
-        ModuleSerialNo: {
-          address: `DB46,S76.20`,
-          type: 'READ_ONLY',
-        },
-      } as BlockSetting<RecordID>;
 
-      plcCommunicationService.setConfig(configuration);
-      await plcCommunicationService.addDataBlock();
-      const data = plcCommunicationService.getData();
-      filename = `RBP025_${data.ModuleSerialNo}_${data.SystemDT}`;
-      xmlData +=
-        this.formatDataForXml(`QD.HDR`, data) +
-        '\n' +
-        `QD.HDR.LineID="BMC" QD.HDR.StationName="RBP025" QD.HDR.StationID="104" QD.HDR.PartID="0" QD.HDR.Mode="0" DBType="QUALITY"` +
-        '\n';
-      for (let i = 0; i < 4; i++) {
-        configuration.blockSetting = {};
-        configuration.blockSetting = this.generateElementConfig(i);
-        plcCommunicationService.resetData();
-        plcCommunicationService.setConfig(configuration);
-        await plcCommunicationService.addDataBlock();
-        const data = plcCommunicationService.getData();
-        xmlData += this.formatDataForXml(`QD.DT0${i + 1}`, data) + '\n';
-      }
-      xmlData += '/>';
-      return { filename, xmlData };
-    } catch (error) {
-      throw new Error('Write to PLC error');
+    await recordInfoConn.addDataBlock();
+    const { SystemDT, ModuleSerialNo } = recordInfoConn.getData();
+    const data = {
+      lineInfo: {
+        SystemID: found.systemID,
+        SystemDT,
+        ModuleSerialNo,
+      },
+      stationInfo: {
+        LineID: found.lineID,
+        StationName: found.stationName,
+        StationID: found.stationID,
+        PartID: '0',
+        Mode: '0',
+      },
+    };
+    const fileName = `${found.stationName}${ModuleSerialNo}_${SystemDT}`;
+    return { fileName, data };
+  }
+
+  private async readRecordData(
+    productionLine: EntityCondition<ProductionLine>,
+  ) {
+    const found = await this.productionLineService.findOne(productionLine);
+    if (!found) {
+      throw new NotFoundException('cant find product category');
     }
+
+    const recordInfoConn: PlcCommunicationService<RecordData> =
+      this.plcServiceFactory(this.eventEmitter);
+    recordDataConfig.ip = found.ipAddress;
+    await recordInfoConn.initConnection();
+    const { connection } = recordInfoConn.getState();
+    if (!connection) {
+      throw new InternalServerErrorException('CONNECTION ERROR');
+    }
+    const data = <PlcData<RecordData>[]>[];
+    for (let i = 0; i < 4; i++) {
+      recordDataConfig.blockSetting = this.generateElementConfig(i);
+      recordInfoConn.setConfig(recordDataConfig);
+      await recordInfoConn.addDataBlock();
+      data[i] = recordInfoConn.getData();
+    }
+    return { data };
   }
 
   private formatDataForXml(prefix: string, data: any): string {

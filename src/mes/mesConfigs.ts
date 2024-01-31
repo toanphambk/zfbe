@@ -1,3 +1,4 @@
+import { Configuration } from '../plc-communication/interface/plc-communication.interface';
 export type RecordData =
   | 'OPID'
   | 'CurDta_QD01'
@@ -26,4 +27,19 @@ export type RecordData =
   | 'OperatorName'
   | 'OPTxt';
 
-export type RecordID = 'SystemDT' | 'ModuleSerialNo';
+export type RecordInfo = 'SystemDT' | 'ModuleSerialNo';
+
+export const recordInfoConfig = <Configuration<RecordInfo>>{
+  blockSetting: {
+    SystemDT: {
+      address: `DB46,S60.14`,
+      type: 'READ_ONLY',
+    },
+    ModuleSerialNo: {
+      address: `DB46,S76.20`,
+      type: 'READ_ONLY',
+    },
+  },
+};
+
+export const recordDataConfig = <Configuration<RecordData>>{};

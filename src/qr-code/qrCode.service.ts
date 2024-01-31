@@ -100,9 +100,11 @@ export class QrCodeService {
     }
   }
 
-  private async readMesData() {
+  private async readMesDataEportXml() {
     try {
-      const data = await this.mesService.readDataAndExportXml();
+      const { xmlData, fileName } = await this.mesService.readMesData({
+        id: 1,
+      });
       await this.plcCommunicationService.writeBlock(['mesReadFlag'], [0]);
       await this.plcCommunicationService.writeBlock(['mesReadDone'], [0]);
 
@@ -111,8 +113,8 @@ export class QrCodeService {
         mkdirSync(dirPath, { recursive: true });
       }
 
-      const filePath = join(dirPath, data.filename);
-      writeFileSync(filePath, data.xmlData);
+      const filePath = join(dirPath, fileName);
+      writeFileSync(filePath, xmlData);
     } catch (error) {
       await this.plcCommunicationService.writeBlock(['mesReadDone'], [1]);
       console.error(error);
@@ -122,7 +124,7 @@ export class QrCodeService {
   @OnEvent('dataChange')
   handleOrderCreatedEvent({ key, val }) {
     if (key == 'mesReadFlag' && val == 1) {
-      void this.readMesData();
+      void this.readMesDataEportXml();
     }
   }
 }

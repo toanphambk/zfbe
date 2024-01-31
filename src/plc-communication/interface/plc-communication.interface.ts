@@ -3,9 +3,9 @@ export type Configuration<T extends PropertyKey> = {
   blockSetting: BlockSetting<T>;
 };
 
-export type BlockSetting<T extends PropertyKey> = Partial<{
+export type BlockSetting<T extends PropertyKey> = {
   [P in T]: BlockInfo;
-}>;
+};
 
 export type BlockInfo = {
   address: string;

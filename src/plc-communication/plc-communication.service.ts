@@ -299,11 +299,6 @@ export class PlcCommunicationService<BlockName extends PropertyKey> {
           }, 500);
         }
         break;
-      case 'INTI CONNECTION ERROR':
-        setTimeout(async () => {
-          await this.initConnection();
-        }, 5000);
-        break;
     }
     return;
   };
