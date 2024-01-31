@@ -50,7 +50,7 @@ export class MesService {
       xmlData += '/>';
       return { fileName, xmlData };
     } catch (error) {
-      throw new Error('Read to PLC error');
+      throw new Error('Read From PLC error');
     }
   }
 
@@ -100,20 +100,21 @@ export class MesService {
       throw new NotFoundException('cant find product category');
     }
 
-    const recordInfoConn: PlcCommunicationService<RecordData> =
+    const recordDataConn: PlcCommunicationService<RecordData> =
       this.plcServiceFactory(this.eventEmitter);
     recordDataConfig.ip = found.ipAddress;
-    await recordInfoConn.initConnection();
-    const { connection } = recordInfoConn.getState();
+    recordDataConn.setConfig(recordDataConfig);
+    await recordDataConn.initConnection();
+    const { connection } = recordDataConn.getState();
     if (!connection) {
       throw new InternalServerErrorException('CONNECTION ERROR');
     }
     const data = <PlcData<RecordData>[]>[];
     for (let i = 0; i < 4; i++) {
       recordDataConfig.blockSetting = this.generateElementConfig(i);
-      recordInfoConn.setConfig(recordDataConfig);
-      await recordInfoConn.addDataBlock();
-      data[i] = recordInfoConn.getData();
+      recordDataConn.setConfig(recordDataConfig);
+      await recordDataConn.addDataBlock();
+      data[i] = recordDataConn.getData();
     }
     return { data };
   }
