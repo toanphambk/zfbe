@@ -62,9 +62,7 @@ export class MesService {
       plcCommunicationService.setConfig(configuration);
       await plcCommunicationService.addDataBlock();
       const data = plcCommunicationService.getData();
-      const systemDT = this.getCurrentFormattedDate();
-      xmlData += `QD.HDR.SystemDT="${systemDT}" `;
-      filename = `RBP025_${data.ModuleSerialNo}_${systemDT}`;
+      filename = `RBP025_${data.ModuleSerialNo}_${data.SystemDT}`;
       xmlData +=
         this.formatDataForXml(`QD.HDR`, data) +
         '\n' +
@@ -92,18 +90,6 @@ export class MesService {
         return `${prefix}.${key.replace('_', '.')}="${value}"`;
       })
       .join(' ');
-  }
-
-  private getCurrentFormattedDate(): string {
-    const now = new Date();
-    const year = now.getFullYear().toString();
-    const month = (now.getMonth() + 1).toString().padStart(2, '0');
-    const day = now.getDate().toString().padStart(2, '0');
-    const hour = now.getHours().toString().padStart(2, '0');
-    const minute = now.getMinutes().toString().padStart(2, '0');
-    const second = now.getSeconds().toString().padStart(2, '0');
-
-    return year + month + day + hour + minute + second;
   }
 
   private generateElementConfig(i: number) {
