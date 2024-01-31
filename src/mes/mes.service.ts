@@ -64,7 +64,7 @@ export class MesService {
       const data = plcCommunicationService.getData();
       const systemDT = this.getCurrentFormattedDate();
       xmlData += `QD.HDR.SystemDT="${systemDT}" `;
-      filename = `RBP025_${data.ModuleSerialNo}_${systemDT}}`;
+      filename = `RBP025_${data.ModuleSerialNo}_${systemDT}`;
       xmlData +=
         this.formatDataForXml(`QD.HDR`, data) +
         '\n' +
