@@ -87,10 +87,9 @@ export class MesService {
   private formatDataForXml(prefix: string, data: any): string {
     return Object.entries(data)
       .map(([key, value]) => {
-        return `${prefix}.${key}="${value}"`;
+        return `${prefix}.${key.replace('_', '.')}="${value}"`;
       })
-      .join(' ')
-      .replace('_', '.');
+      .join(' ');
   }
 
   private generateElementConfig(i: number) {
