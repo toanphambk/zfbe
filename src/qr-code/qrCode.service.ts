@@ -102,7 +102,7 @@ export class QrCodeService {
 
   private async readMesDataEportXml() {
     try {
-      const { xmlData, fileName } = await this.mesService.readMesData({
+      const { xmlData, fileName } = await this.mesService.getMesData({
         id: 1,
       });
       await this.plcCommunicationService.writeBlock(['mesReadFlag'], [0]);

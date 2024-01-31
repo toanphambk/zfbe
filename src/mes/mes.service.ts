@@ -33,9 +33,9 @@ export class MesService {
     private productionLineService: ProductionLineService,
   ) {}
 
-  public async readMesData(productionLine: EntityCondition<ProductionLine>) {
+  public async getMesData(productionLine: EntityCondition<ProductionLine>) {
     try {
-      const { fileName, data: recordInfo } = await this.readRecordInfo(
+      const { fileName, data: recordInfo } = await this.getRecordInfo(
         productionLine,
       );
       let xmlData = '<Data\n" ';
@@ -43,7 +43,7 @@ export class MesService {
       xmlData +=
         this.formatDataForXml(`QD.HDR`, recordInfo.stationInfo) +
         ' DBType="QUALITY\n';
-      const { data: recordData } = await this.readRecordData(productionLine);
+      const { data: recordData } = await this.getRecordData(productionLine);
       recordData.forEach((data, index) => {
         xmlData += this.formatDataForXml(`QD.DT0${index + 1}`, data) + '\n';
       });
@@ -54,9 +54,7 @@ export class MesService {
     }
   }
 
-  private async readRecordInfo(
-    productionLine: EntityCondition<ProductionLine>,
-  ) {
+  private async getRecordInfo(productionLine: EntityCondition<ProductionLine>) {
     const found = await this.productionLineService.findOne(productionLine);
     if (!found) {
       throw new NotFoundException('cant find product category');
@@ -88,13 +86,11 @@ export class MesService {
         Mode: '0',
       },
     };
-    const fileName = `${found.stationName}${ModuleSerialNo}_${SystemDT}`;
+    const fileName = `${found.stationName}_${ModuleSerialNo}_${SystemDT}`;
     return { fileName, data };
   }
 
-  private async readRecordData(
-    productionLine: EntityCondition<ProductionLine>,
-  ) {
+  private async getRecordData(productionLine: EntityCondition<ProductionLine>) {
     const found = await this.productionLineService.findOne(productionLine);
     if (!found) {
       throw new NotFoundException('cant find product category');
