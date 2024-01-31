@@ -38,7 +38,7 @@ export class MesService {
       const { fileName, data: recordInfo } = await this.getRecordInfo(
         productionLine,
       );
-      let xmlData = '<Data\n" ';
+      let xmlData = '<Data\n';
       xmlData += this.formatDataForXml(`QD.HDR`, recordInfo.lineInfo) + '\n';
       xmlData +=
         this.formatDataForXml(`QD.HDR`, recordInfo.stationInfo) +
