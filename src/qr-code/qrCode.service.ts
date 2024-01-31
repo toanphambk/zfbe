@@ -80,6 +80,7 @@ export class QrCodeService {
       await this.checkConnectionAndInitialize();
     }
   }
+
   async create(createDto: CreateQrCodeDto): Promise<Qrcode> {
     const { state } = this.plcCommunicationService.getState();
     const { barcodeFlag } = this.plcCommunicationService.getData();
