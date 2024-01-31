@@ -89,7 +89,8 @@ export class MesService {
       .map(([key, value]) => {
         return `${prefix}.${key}="${value}"`;
       })
-      .join(' ');
+      .join(' ')
+      .replace('_', '.');
   }
 
   private generateElementConfig(i: number) {
