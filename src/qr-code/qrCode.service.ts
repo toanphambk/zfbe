@@ -90,7 +90,6 @@ export class QrCodeService {
         ['barcodeData', 'barcodeFlag'],
         [createDto.code, 1],
       );
-      await this.plcCommunicationService.writeBlock(['barcodeFlag'], [1]);
       const qrCode = this.repo.create(createDto);
       return this.repo.save(qrCode);
     } catch (error) {
