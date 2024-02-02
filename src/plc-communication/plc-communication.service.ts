@@ -188,7 +188,7 @@ export class PlcCommunicationService<BlockName extends PropertyKey> {
         await this.dataUpdate();
         void this.cycleScan();
       } catch (error) {
-        this.errorHandler('CYCLE SCAN ERROR' + error, false);
+        this.errorHandler('CYCLE SCAN ERROR: ' + error, false);
       }
     }
   };

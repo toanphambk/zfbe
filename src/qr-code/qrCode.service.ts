@@ -64,7 +64,6 @@ export class QrCodeService {
       this.plcCommunicationService = this.plcServiceFactory(this.eventEmitter);
       this.plcCommunicationService.setConfig(configuration);
       await this.checkConnectionAndInitialize();
-
       await this.plcCommunicationService.addDataBlock();
       await this.plcCommunicationService.activeCycleScan();
     } catch (error) {
@@ -83,9 +82,8 @@ export class QrCodeService {
 
   async create(createDto: CreateQrCodeDto): Promise<Qrcode> {
     const { state } = this.plcCommunicationService.getState();
-    const { barcodeFlag } = this.plcCommunicationService.getData();
     try {
-      if (state !== 'READY' || barcodeFlag) {
+      if (state !== 'READY') {
         throw new InternalServerErrorException('hardware is not ready');
       }
       await this.plcCommunicationService.writeBlock(
