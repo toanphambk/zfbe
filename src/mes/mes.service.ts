@@ -112,8 +112,7 @@ export class MesService {
       recordDataConfig.blockSetting = this.generateElementConfig(i);
       recordDataConn.setConfig(recordDataConfig);
       await recordDataConn.addDataBlock();
-      data[i] = recordDataConn.getData();
-      log(data[i]);
+      data.push(recordDataConn.getData());
     }
     log(data);
     return { data };
