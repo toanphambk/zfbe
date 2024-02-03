@@ -96,8 +96,8 @@ export class PlcCommunicationService<BlockName extends PropertyKey> {
 
     if (this.state == 'READY') {
       this.state = 'INIT';
-      this.s7Connection.removeItems();
     }
+    this.s7Connection.removeItems();
 
     this.addressList = { read: [], write: [] };
 

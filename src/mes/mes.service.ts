@@ -45,7 +45,6 @@ export class MesService {
         this.formatDataForXml(`QD.HDR`, recordInfo.stationInfo) +
         ' DBType="QUALITY"\n';
       const { data: recordData } = await this.getRecordData(productionLine);
-      log(recordData);
       recordData.forEach((data, index) => {
         xmlData += this.formatDataForXml(`QD.DT0${index + 1}`, data) + '\n';
       });
@@ -114,6 +113,7 @@ export class MesService {
       recordDataConn.setConfig(recordDataConfig);
       await recordDataConn.addDataBlock();
       data[i] = recordDataConn.getData();
+      log(data[i]);
     }
     return { data };
   }
