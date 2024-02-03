@@ -20,6 +20,7 @@ import {
 import { ProductionLine } from 'src/production-line/entities/production-line.entity';
 import { ProductionLineService } from 'src/production-line/production-line.service';
 import { EntityCondition } from 'src/utils/types/entity-condition.type';
+import { log } from 'console';
 
 @Injectable()
 export class MesService {
@@ -44,9 +45,11 @@ export class MesService {
         this.formatDataForXml(`QD.HDR`, recordInfo.stationInfo) +
         ' DBType="QUALITY"\n';
       const { data: recordData } = await this.getRecordData(productionLine);
+      log(recordData);
       recordData.forEach((data, index) => {
         xmlData += this.formatDataForXml(`QD.DT0${index + 1}`, data) + '\n';
       });
+
       xmlData += '/>';
       return { fileName, xmlData };
     } catch (error) {
