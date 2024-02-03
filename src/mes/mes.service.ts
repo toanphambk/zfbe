@@ -115,7 +115,6 @@ export class MesService {
       data[i] = recordDataConn.getData();
       log(data)[i];
     }
-    log(data);
     return { data };
   }
 
