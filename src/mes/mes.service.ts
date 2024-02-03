@@ -111,7 +111,7 @@ export class MesService {
       recordDataConfig.blockSetting = this.generateElementConfig(i);
       recordDataConn.setConfig(recordDataConfig);
       await recordDataConn.addDataBlock();
-      data.push(recordDataConn.getData());
+      data[i] = recordDataConn.getData();
     }
     return { data };
   }
