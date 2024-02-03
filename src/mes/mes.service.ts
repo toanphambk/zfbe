@@ -20,7 +20,6 @@ import {
 import { ProductionLine } from 'src/production-line/entities/production-line.entity';
 import { ProductionLineService } from 'src/production-line/production-line.service';
 import { EntityCondition } from 'src/utils/types/entity-condition.type';
-import { log } from 'console';
 
 @Injectable()
 export class MesService {
@@ -114,7 +113,6 @@ export class MesService {
       await recordDataConn.addDataBlock();
       data.push(recordDataConn.getData());
     }
-    log(data);
     return { data };
   }
 
