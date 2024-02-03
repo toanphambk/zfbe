@@ -94,17 +94,8 @@ export class PlcCommunicationService<BlockName extends PropertyKey> {
       throw new Error('Plc Communication Service Is Not Ready');
     }
 
-    if (this.state == 'READY') {
-      this.state = 'INIT';
-    }
-
+    this.state = 'INIT';
     this.s7Connection.removeItems();
-    await new Promise<void>((res) => {
-      setTimeout(() => {
-        res();
-      }, 200);
-    });
-
     this.addressList = { read: [], write: [] };
 
     Object.entries(this.config.blockSetting).forEach(([key, blockSetting]) => {
