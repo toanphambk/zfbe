@@ -113,8 +113,8 @@ export class MesService {
       recordDataConn.setConfig(recordDataConfig);
       await recordDataConn.addDataBlock();
       data[i] = recordDataConn.getData();
-      log(data[i]);
     }
+    log(data);
     return { data };
   }
 
