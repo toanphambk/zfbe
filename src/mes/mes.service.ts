@@ -87,7 +87,7 @@ export class MesService {
         Mode: '0',
       },
     };
-    const fileName = `${found.stationName}_${ModuleSerialNo}_${SystemDT}`;
+    const fileName = `${found.stationName}_${ModuleSerialNo}_${SystemDT}.xml`;
     return { fileName, data };
   }
 
