@@ -32,7 +32,7 @@ export class PlcCommunicationService<BlockName extends PropertyKey> {
   }
 
   public getData(): PlcData<BlockName> {
-    return this.data;
+    return { ...this.data };
   }
   public resetData(): boolean {
     if (this.cycleScanIsActive) {
