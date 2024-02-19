@@ -54,9 +54,6 @@ export class PlcCommunicationService<BlockName extends PropertyKey> {
   }
 
   public async initConnection(): Promise<boolean> {
-    console.log(
-      `[ INIT CONNECTION ] : ${JSON.stringify(this.config, null, 1)}`,
-    );
     this.state = 'INIT';
     try {
       await this.establishConnection();
