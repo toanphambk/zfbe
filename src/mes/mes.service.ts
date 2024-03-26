@@ -52,7 +52,7 @@ export class MesService {
       xmlData +=
         this.formatDataForXml(`QD.HDR`, recordInfo.stationInfo) +
         ' DBType="QUALITY"\n';
-      recordData.forEach(async (data, index) => {
+      recordData.forEach((data, index) => {
         xmlData += this.formatDataForXml(`QD.DT0${index + 1}`, data) + '\n';
       });
       xmlData += '/>';

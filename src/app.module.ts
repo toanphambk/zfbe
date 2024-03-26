@@ -29,6 +29,7 @@ import { MonitorModule } from './monitor/monitor.module';
 import { MachineEventsModule } from './machine-events/machine-events.module';
 import { HardwareActionModule } from './qr-code/hardware-action.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { ServeStaticModule } from '@nestjs/serve-static';
 
 @Module({
   imports: [
@@ -79,6 +80,9 @@ import { ScheduleModule } from '@nestjs/schedule';
     MonitorModule,
     EventEmitterModule.forRoot(),
     ScheduleModule.forRoot(),
+    ServeStaticModule.forRoot({
+      rootPath: path.join(__dirname, '..', 'dist'),
+    }),
     MachineEventsModule,
   ],
 })
