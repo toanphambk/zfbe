@@ -1,4 +1,4 @@
-import { ProductionLine } from 'src/production-line/entities/production-line.entity';
+import { Machine } from 'src/machine/entities/machine.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -32,35 +32,19 @@ export class Shift {
   @ApiProperty({ example: '16:00', description: 'End time of the shift' })
   endTime: string;
 
-  @ManyToOne(() => ProductionLine, (productionLine) => productionLine.shifts)
-  // @ApiProperty({
-  //   type: () => ProductionLine,
-  //   description: 'The production line associated with this shift',
-  // })
-  productionLine: ProductionLine;
+  @Exclude()
+  @ManyToOne(() => Machine, (machine) => machine.shifts)
+  machine: Machine;
 
   @CreateDateColumn()
   @Exclude()
-  // @ApiProperty({
-  //   example: '2021-01-01T00:00:00.000Z',
-  //   description: 'Creation date of the production line record',
-  // })
   createdAt: Date;
 
   @UpdateDateColumn()
   @Exclude()
-  // @ApiProperty({
-  //   example: '2021-01-01T00:00:00.000Z',
-  //   description: 'Last update date of the production line record',
-  // })
   updatedAt: Date;
 
   @DeleteDateColumn()
   @Exclude()
-  // @ApiProperty({
-  //   example: '2021-01-01T00:00:00.000Z',
-  //   description: 'Deletion date of the production line record',
-  //   nullable: true,
-  // })
   deletedAt: Date;
 }

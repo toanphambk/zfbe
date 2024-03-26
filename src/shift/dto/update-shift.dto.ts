@@ -16,5 +16,5 @@ export class UpdateShiftDto {
 
   @ApiProperty({ example: 1, required: false })
   @IsOptional()
-  productionLineId?: number;
+  machineId?: number;
 }

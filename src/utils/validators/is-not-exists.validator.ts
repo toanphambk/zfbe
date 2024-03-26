@@ -33,8 +33,6 @@ export class IsNotExist implements ValidatorConstraintInterface {
     if (entity?.id === currentValue?.id) {
       return true;
     }
-    console.log(entity);
-
     return !entity;
   }
 }

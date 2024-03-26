@@ -26,14 +26,14 @@ export class ShiftService {
     throw new BadRequestException('Shift Overlapse');
   }
 
-  findAll(productionLineId?: number): Promise<Shift[]> {
-    if (productionLineId) {
+  public findAll(machineId?: number): Promise<Shift[]> {
+    if (machineId) {
       return this.repo.find({
-        where: { productionLine: { id: productionLineId } },
+        where: { machine: { id: machineId } },
       });
     } else {
       return this.repo.find({
-        relations: ['productionLine'],
+        relations: ['machine'],
       });
     }
   }
@@ -42,7 +42,7 @@ export class ShiftService {
     const shift = await this.repo.findOne({ where: fields });
 
     if (!shift) {
-      throw new NotFoundException('Production line setting not found');
+      throw new NotFoundException('machine setting not found');
     }
 
     return shift;
@@ -70,7 +70,7 @@ export class ShiftService {
   }
 
   async isTimeOverlap(createDto: CreateShiftDto): Promise<boolean> {
-    const shifts = await this.findAll(createDto.productionLine.id);
+    const shifts = await this.findAll(createDto.machine.id);
 
     for (const shift of shifts) {
       const createStartTimeMinutes = this._getTimeInMinutes(

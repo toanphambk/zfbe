@@ -1,57 +1,85 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { MesService } from 'src/mes/mes.service';
+import { PlcCommunicationService } from 'src/plc-communication/plc-communication.service';
+import { Machine } from 'src/machine/entities/machine.entity';
+import {
+  MonitorDataType,
+  monitorDataConfig,
+} from './interface/monitor.interface';
+import { PlcCommunicationServiceFactory } from 'src/plc-communication/interface/plc-communication.interface';
+import { log } from 'console';
 
 @Injectable()
 export class MonitorService {
-  // constructor(setting: Shift) {
-  //   this.setConfiguration(setting);
-  //   this.data = {
-  //     state: 'off',
-  //     productCode: '',
-  //     productQuantity: [],
-  //     target: 0,
-  //     id: this.setting.productionLine.id,
-  //   };
-  // }
-  // private data: {
-  //   state: 'manufacturing' | 'off' | 'break time' | 'standby';
-  //   productCode: string;
-  //   productQuantity: number[];
-  //   target: number;
-  //   id: number;
-  // };
-  // private setting: Shift;
-  // setConfiguration(setting: Shift) {
-  //   // Update the configuration based on the provided config object
-  //   this.setting = setting;
-  // }
-  // test() {
-  //   console.log(this.data);
-  // }
-  // getConfiguration() {
-  //   return this.setting;
-  // }
-  // getData() {
-  //   // Return the current data
-  //   return this.data;
-  // }
-  // productTracking() {
-  //   // Query the database for the number of products manufactured in that day
-  //   // Populate the productQuantity array with the count for each hour
-  //   // Run this method periodically (e.g., every minute)
-  //   // Implementation logic for productTracking
-  // }
-  // productManufactureFinish() {
-  //   // Save the event of a product being manufactured to the database
-  //   // Implementation logic for productManufactureFinish
-  // }
-  // productionLineAliveChecking() {
-  //   // Check if the production line is alive by receiving signals at regular intervals
-  //   // If the interval passes without receiving any signals, change the status to offline and save the change event to the database
-  //   // Implementation logic for productionLineAliveChecking
-  // }
-  // getOEE() {
-  //   // Calculate and return the Overall Equipment Efficiency (OEE)
-  //   // Implementation logic for getOEE
-  // }
-  // Other methods and functionality as needed
+  constructor(
+    private machine: Machine,
+    @Inject('PlcCommunicationServiceFactory')
+    private plcServiceFactory: PlcCommunicationServiceFactory<any>,
+    private mesService: MesService,
+  ) {
+    void this.initPlcService();
+  }
+
+  private plcMonitorConn: PlcCommunicationService<MonitorDataType>;
+  private connectionPulseInterval: NodeJS.Timeout;
+
+  private async initPlcService() {
+    try {
+      const config = { ...monitorDataConfig, machine: this.machine };
+      this.plcMonitorConn = this.plcServiceFactory(config);
+      await this.checkConnectionAndInitialize();
+      await this.plcMonitorConn.addDataBlock();
+      await this.plcMonitorConn.activeCycleScan();
+      this.connectionPulseInterval = setInterval(() => {
+        void this.connectionPulse();
+      }, 1000);
+    } catch (error) {
+      log(error);
+    }
+  }
+
+  private async checkConnectionAndInitialize() {
+    await this.plcMonitorConn.initConnection();
+    const { connection } = this.plcMonitorConn.getState();
+    if (!connection) {
+      await this.plcMonitorConn.connectionCleanUp();
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await this.checkConnectionAndInitialize();
+    }
+  }
+
+  async connectionPulse() {
+    try {
+      const { connection } = this.plcMonitorConn.getState();
+      if (connection) {
+        const { connectionPulse } = this.plcMonitorConn.getData();
+        await this.plcMonitorConn.writeBlock(
+          ['connectionPulse'],
+          [connectionPulse ? 0 : 1],
+          false,
+        );
+      }
+    } catch (error) {
+      log(error);
+    }
+  }
+
+  public getState() {
+    return this.plcMonitorConn.getState();
+  }
+
+  public async removeMonitor() {
+    await this.plcMonitorConn.connectionCleanUp();
+    this.connectionPulseInterval.unref();
+  }
+
+  public async mesRequesHandler(machine: Machine) {
+    try {
+      await this.mesService.readMesDataExportXml(machine);
+      await this.plcMonitorConn.writeBlock(['mesReadFlag'], [0]);
+      await this.plcMonitorConn.writeBlock(['mesReadDone'], [0]);
+    } catch (error) {
+      console.error(error);
+    }
+  }
 }

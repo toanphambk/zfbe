@@ -2,27 +2,21 @@ import { ApiProperty, PartialType } from '@nestjs/swagger';
 import { IsNotEmpty, Validate } from 'class-validator';
 import { Machine } from 'src/machine/entities/machine.entity';
 import { IsRecordExist } from 'src/utils/validators/is-record-exist.validator';
-import { DeepPartial } from 'typeorm';
 
-export class CreateShiftDto {
-  @ApiProperty({ example: 'Shift 1' })
+export class CreateRFIDDto {
+  @ApiProperty({
+    example: 'abc123',
+    description: 'rfid scan by the system',
+  })
   @IsNotEmpty()
-  shiftName: string;
-
-  @ApiProperty({ example: '08:00' })
-  @IsNotEmpty()
-  startTime: string;
-
-  @ApiProperty({ example: '16:00' })
-  @IsNotEmpty()
-  endTime: string;
+  code: string;
 
   @ApiProperty({
     example: { id: 1 },
+    description: 'The machine where the QR code is generated',
     type: () => PartialType<Machine>,
-    description: 'The machine where the shift is assigned',
   })
   @IsNotEmpty()
   @Validate(IsRecordExist, ['Machine'])
-  machine: DeepPartial<Machine>;
+  machine: Machine;
 }

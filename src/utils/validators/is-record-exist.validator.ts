@@ -16,8 +16,6 @@ export class IsRecordExist implements ValidatorConstraintInterface {
   ) {}
 
   async validate(value: object, validationArguments: ValidationArguments) {
-    console.log(value, validationArguments);
-
     const repository = validationArguments.constraints[0] as string;
     const entity: unknown = await this.dataSource
       .getRepository(repository)

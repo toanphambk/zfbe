@@ -1,5 +1,5 @@
-import { Configuration } from '../plc-communication/interface/plc-communication.interface';
-export type RecordData =
+import { ConfigurationType } from '../../plc-communication/interface/plc-communication.interface';
+export type RecordDataType =
   | 'OPID'
   | 'CurDta_QD01'
   | 'CurDta_QD02'
@@ -27,19 +27,23 @@ export type RecordData =
   | 'OperatorName'
   | 'OPTxt';
 
-export type RecordInfo = 'SystemDT' | 'ModuleSerialNo';
+export type RecordInfo = 'SystemDT' | 'ModuleSerialNo' | 'Result';
 
-export const recordInfoConfig = <Configuration<RecordInfo>>{
+export const recordInfoConfig = <ConfigurationType<RecordInfo>>{
   blockSetting: {
     SystemDT: {
-      address: `DB46,S60.14`,
+      address: `DB46,S62.14`,
       type: 'READ_ONLY',
     },
     ModuleSerialNo: {
-      address: `DB46,S76.20`,
+      address: `DB46,S78.20`,
+      type: 'READ_ONLY',
+    },
+    Result: {
+      address: `DB46,INT100.1`,
       type: 'READ_ONLY',
     },
   },
 };
 
-export const recordDataConfig = <Configuration<RecordData>>{};
+export const recordDataConfig = <ConfigurationType<RecordDataType>>{};

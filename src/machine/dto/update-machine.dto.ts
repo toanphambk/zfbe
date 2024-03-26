@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional } from 'class-validator';
 
-export class UpdateProductionLineDto {
+export class UpdateMachineDto {
   @ApiProperty({ example: '12345' })
   @IsOptional()
   systemID?: string;
@@ -18,11 +18,11 @@ export class UpdateProductionLineDto {
   @IsOptional()
   stationID?: string;
 
-  @ApiProperty({ example: 'Updated Production Line Description' })
+  @ApiProperty({ example: 'Updated machine Description' })
   @IsOptional()
   description?: string;
 
   @ApiProperty({ example: '192.168.1.1' })
   @IsOptional()
-  ipAddress?: string;
+  ip?: string;
 }
