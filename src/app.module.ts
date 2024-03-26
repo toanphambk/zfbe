@@ -81,7 +81,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
     EventEmitterModule.forRoot(),
     ScheduleModule.forRoot(),
     ServeStaticModule.forRoot({
-      rootPath: path.join(__dirname, '..', 'dist'),
+      rootPath: path.join(__dirname, '..', 'static'),
     }),
     MachineEventsModule,
   ],
