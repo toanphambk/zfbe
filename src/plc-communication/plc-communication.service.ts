@@ -4,42 +4,50 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { EventEmitter } from 'events';
 import { v4 as uuidv4 } from 'uuid';
 import {
-  PlcAddresslist,
-  PlcData,
-  PlcWriteQueue,
-  Configuration,
-  BlockInfo,
-  PlcComState,
+  PlcAddresslistType,
+  PlcDataType,
+  PlcWriteQueueType,
+  ConfigurationType,
+  BlockInfoType,
+  PlcComStateType,
   Payload,
 } from './interface/plc-communication.interface';
 
 @Injectable()
 export class PlcCommunicationService<BlockName extends PropertyKey> {
-  constructor(private PlcCommunicationServiceEvent: EventEmitter2) {
+  constructor(
+    private plcCommunicationServiceEvent: EventEmitter2,
+    private config: ConfigurationType<BlockName>,
+  ) {
     this.data = new Proxy(this.data, this.dataChangeHandler());
+    this.setConfig(this.config);
   }
-  private s7Connection = new nodes7();
-  private state: PlcComState = 'BOOT_UP';
+  private s7Connection = new nodes7({ silent: true });
+  private state: PlcComStateType = 'BOOT_UP';
   private cycleScanIsActive = false;
-  private config: Configuration<BlockName>;
-  private addressList: PlcAddresslist;
-  private data = <PlcData<BlockName>>{};
-  private plcWriteQueue: PlcWriteQueue[] = [];
+  private addressList: PlcAddresslistType;
+  private data = <PlcDataType<BlockName>>{};
+  private plcWriteQueue: PlcWriteQueueType[] = [];
   private plcEvent = new EventEmitter();
 
-  public setConfig(config: Configuration<BlockName>) {
-    this.config = config;
+  private setConfig(config: ConfigurationType<BlockName>) {
+    this.config = { ...config };
   }
 
-  public getData(): PlcData<BlockName> {
+  public getData(): PlcDataType<BlockName> {
     return { ...this.data };
   }
+
   public resetData(): boolean {
     if (this.cycleScanIsActive) {
       return false;
     }
-    this.data = <PlcData<BlockName>>{};
+    this.data = <PlcDataType<BlockName>>{};
     return true;
+  }
+
+  private removeListeners() {
+    this.plcEvent.removeAllListeners();
   }
 
   public getState() {
@@ -68,7 +76,7 @@ export class PlcCommunicationService<BlockName extends PropertyKey> {
     return new Promise((resolve, reject) => {
       this.s7Connection.initiateConnection(
         {
-          host: this.config.ip,
+          host: this.config.machine.ip,
           port: 102,
           rack: 0,
           slot: 1,
@@ -78,12 +86,22 @@ export class PlcCommunicationService<BlockName extends PropertyKey> {
     });
   }
 
-  public async dropConnection() {
-    await new Promise<void>((res) => {
-      this.s7Connection.dropConnection(() => {
-        res();
+  private async dropConnection() {
+    const { connection } = this.getState();
+    if (connection) {
+      await new Promise<void>((res) => {
+        this.s7Connection.dropConnection(() => {
+          res();
+        });
       });
-    });
+    }
+  }
+
+  public async connectionCleanUp() {
+    this.deactiveCycleScan();
+    await this.dropConnection();
+    this.resetData();
+    this.removeListeners();
   }
 
   public addDataBlock = async () => {
@@ -96,7 +114,7 @@ export class PlcCommunicationService<BlockName extends PropertyKey> {
     this.addressList = { read: [], write: [] };
 
     Object.entries(this.config.blockSetting).forEach(([key, blockSetting]) => {
-      const setting = blockSetting as BlockInfo;
+      const setting = blockSetting as BlockInfoType;
 
       if (['READ_ONLY', 'READ_WRITE'].includes(setting.type)) {
         this.addressList.read.push({
@@ -118,11 +136,7 @@ export class PlcCommunicationService<BlockName extends PropertyKey> {
 
     this.s7Connection.addItems(readingAdressList);
 
-    await new Promise<void>((res) => {
-      setTimeout(() => {
-        res();
-      }, 200);
-    });
+    await new Promise((res) => setTimeout(res, 10));
     await this.dataUpdate();
     return true;
   };
@@ -138,6 +152,7 @@ export class PlcCommunicationService<BlockName extends PropertyKey> {
 
   public deactiveCycleScan(): void {
     this.cycleScanIsActive = false;
+    this.plcWriteQueue = [];
   }
 
   private cycleScan = async () => {
@@ -146,11 +161,8 @@ export class PlcCommunicationService<BlockName extends PropertyKey> {
         if (this.state != 'READY') {
           console.log('[ PLC Service ]: PLC Service Is Not Ready');
           this.plcWriteQueue = [];
-          await new Promise<void>((res) => {
-            setTimeout(() => {
-              res();
-            }, 1000);
-          });
+          await new Promise((res) => setTimeout(res, 1000));
+          void this.cycleScan();
           return;
         }
 
@@ -209,6 +221,7 @@ export class PlcCommunicationService<BlockName extends PropertyKey> {
   public writeBlock = (blockName: BlockName[], data: any[], log = true) => {
     return new Promise<boolean>((res, rej) => {
       if (this.state !== 'READY') {
+        console.log(blockName, data, this.state);
         rej('PLC is not ready');
         return;
       }
@@ -255,12 +268,16 @@ export class PlcCommunicationService<BlockName extends PropertyKey> {
         if (oldVal != val) {
           target[key] = val;
           const payload: Payload<BlockName> = {
+            machine: this.config.machine,
             data: this.data,
             key,
             oldVal,
             val,
           };
-          this.PlcCommunicationServiceEvent.emit('dataChange', payload);
+          this.plcCommunicationServiceEvent.emit(
+            'machine.data.change',
+            payload,
+          );
           return true;
         }
         return true;
@@ -276,7 +293,9 @@ export class PlcCommunicationService<BlockName extends PropertyKey> {
 
   private errorHandler = (err: string, isOperational: boolean, data?: any) => {
     console.log(`[ ERROR ] :  ${err} : ${data ? JSON.stringify(data) : ''}`);
+
     this.state = 'ERROR';
+
     if (!isOperational) {
       //do some other logging, event trigger for this
       return;
@@ -287,7 +306,7 @@ export class PlcCommunicationService<BlockName extends PropertyKey> {
         const isBadReading = Object.values(data.plcData).find(
           (val: unknown) => typeof val == 'string' && val.includes('BAD'),
         );
-        if (isBadReading) {
+        if (isBadReading && this.cycleScanIsActive) {
           setTimeout(() => {
             void this.dataUpdate();
           }, 500);

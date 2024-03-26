@@ -47,7 +47,7 @@ export class ShiftController {
   @HttpCode(HttpStatus.OK)
   @ApiQuery({
     name: 'id',
-    description: 'Filter shifts by production line ID',
+    description: 'Filter shifts by machine ID',
     type: Number,
     required: false,
     example: 1,

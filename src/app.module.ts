@@ -20,12 +20,15 @@ import { MailModule } from './mail/mail.module';
 import { HomeModule } from './home/home.module';
 import { DataSource, DataSourceOptions } from 'typeorm';
 import { AllConfigType } from './config/config.type';
-import { ProductionLineModule } from './production-line/production-line.module';
+import { MachineModule } from './machine/machine.module';
 import { ShiftModule } from './shift/shift.module';
 import { PlcCommunicationModule } from './plc-communication/plc-communication.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { MesModule } from './mes/mes.module';
-import { QrcodeModule } from './qr-code/qrCode.module';
+import { MonitorModule } from './monitor/monitor.module';
+import { MachineEventsModule } from './machine-events/machine-events.module';
+import { HardwareActionModule } from './qr-code/hardware-action.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -68,12 +71,15 @@ import { QrcodeModule } from './qr-code/qrCode.module';
     ForgotModule,
     MailModule,
     HomeModule,
-    ProductionLineModule,
+    MachineModule,
     ShiftModule,
     PlcCommunicationModule,
-    QrcodeModule,
+    HardwareActionModule,
     MesModule,
+    MonitorModule,
     EventEmitterModule.forRoot(),
+    ScheduleModule.forRoot(),
+    MachineEventsModule,
   ],
 })
 export class AppModule {}
