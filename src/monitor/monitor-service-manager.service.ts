@@ -91,7 +91,7 @@ export class MonitorServiceManager {
   @OnEvent('machine.update')
   handleMachineUpdate(event: Machine) {
     try {
-      this.updateMonitorService(event);
+      void this.updateMonitorService(event);
     } catch (error) {
       log(error);
     }
@@ -100,7 +100,7 @@ export class MonitorServiceManager {
   @OnEvent('machine.delete')
   handleMachineDelete(event: Machine) {
     try {
-      this.deleteMonitorService(event);
+      void this.deleteMonitorService(event);
     } catch (error) {
       log(error);
     }

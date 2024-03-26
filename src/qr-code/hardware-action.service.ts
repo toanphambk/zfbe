@@ -41,7 +41,7 @@ export class HardwareActionService {
         throw new InternalServerErrorException('CONNECTION ERROR');
       }
       await qrCodeConn.addDataBlock();
-      qrCodeConn.activeCycleScan();
+      void qrCodeConn.activeCycleScan();
       await qrCodeConn.writeBlock(
         ['barcodeData', 'barcodeFlag'],
         [createDto.code, 1],
@@ -67,7 +67,7 @@ export class HardwareActionService {
       if (!connection) {
         throw new InternalServerErrorException('CONNECTION ERROR');
       }
-      rfidDataConn.activeCycleScan();
+      void rfidDataConn.activeCycleScan();
       await rfidDataConn.addDataBlock();
       await rfidDataConn.writeBlock(
         ['rfidData', 'rfidflag'],
